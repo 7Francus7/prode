@@ -61,24 +61,54 @@ const NAV_ITEMS = [
   { href: "/profile", label: "Perfil", Icon: IconProfile },
 ];
 
+const NAVBAR_GLASS: React.CSSProperties = {
+  background: "rgba(8, 12, 22, 0.9)",
+  backdropFilter: "blur(20px) saturate(1.5)",
+  WebkitBackdropFilter: "blur(20px) saturate(1.5)",
+  borderColor: "rgba(255,255,255,0.07)",
+};
+
 export default function Navbar() {
   const pathname = usePathname();
 
   return (
     <>
       {/* Desktop top bar */}
-      <header className="hidden sm:flex items-center justify-between px-6 py-3 border-b border-brand-border bg-brand-card sticky top-0 z-50">
+      <header
+        className="hidden sm:flex items-center justify-between px-6 py-3.5 border-b sticky top-0 z-50"
+        style={NAVBAR_GLASS}
+      >
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="white" stroke="none">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 2a10 10 0 0 0-6.88 17.26L12 12 18.88 19.26A10 10 0 0 0 12 2z" fill="rgba(0,0,0,0.2)" />
+          <div
+            className="w-7 h-7 rounded-lg flex items-center justify-center"
+            style={{
+              background: "linear-gradient(145deg, #4f95ff 0%, #2563eb 100%)",
+              boxShadow: "0 2px 8px rgba(37,99,235,0.38)",
+            }}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+              <path d="M4 22h16" />
+              <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+              <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+              <path d="M18 2H6v7a6 6 0 0 0 12 0V2z" />
             </svg>
           </div>
           <span className="font-black text-[13px] tracking-[0.08em] uppercase text-white/90">
             Prode <span className="text-blue-400">2026</span>
           </span>
         </div>
+
         <nav className="flex items-center gap-0.5">
           {NAV_ITEMS.map((item) => {
             const active = pathname === item.href;
@@ -87,11 +117,19 @@ export default function Navbar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all",
+                  "flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-150",
                   active
-                    ? "bg-blue-600/15 text-blue-400"
+                    ? "text-blue-400"
                     : "text-slate-500 hover:text-white hover:bg-white/5"
                 )}
+                style={
+                  active
+                    ? {
+                        background: "rgba(59,130,246,0.1)",
+                        border: "1px solid rgba(59,130,246,0.18)",
+                      }
+                    : { border: "1px solid transparent" }
+                }
               >
                 <item.Icon />
                 <span>{item.label}</span>
@@ -103,8 +141,11 @@ export default function Navbar() {
 
       {/* Mobile bottom bar */}
       <nav
-        className="sm:hidden fixed bottom-0 inset-x-0 z-50 bg-brand-card border-t border-brand-border"
-        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+        className="sm:hidden fixed bottom-0 inset-x-0 z-50 border-t"
+        style={{
+          ...NAVBAR_GLASS,
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        }}
       >
         <div className="flex">
           {NAV_ITEMS.map((item) => {
@@ -117,9 +158,16 @@ export default function Navbar() {
                   "flex-1 flex flex-col items-center justify-center pt-2.5 pb-2 gap-1 transition-colors relative",
                   active ? "text-blue-400" : "text-slate-600"
                 )}
+                style={active ? { background: "rgba(59,130,246,0.04)" } : {}}
               >
                 {active && (
-                  <span className="absolute top-0 left-1/2 -translate-x-1/2 w-5 h-[2px] rounded-full bg-blue-500" />
+                  <span
+                    className="absolute top-0 left-1/2 -translate-x-1/2 w-7 h-[2px] rounded-full"
+                    style={{
+                      background:
+                        "linear-gradient(90deg, rgba(96,165,250,0) 0%, #60a5fa 50%, rgba(96,165,250,0) 100%)",
+                    }}
+                  />
                 )}
                 <item.Icon />
                 <span className="text-[9px] font-bold tracking-wider uppercase">

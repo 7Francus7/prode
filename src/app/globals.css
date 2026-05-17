@@ -65,7 +65,7 @@
   }
 
   body {
-    background-color: var(--color-brand-dark);
+    background: linear-gradient(160deg, #0a0f20 0%, #080b14 35%, #080914 100%);
     color: #f1f5f9;
     -webkit-font-smoothing: antialiased;
     font-family: Inter, system-ui, sans-serif;
@@ -108,4 +108,71 @@
   .animate-count-pop     { animation: countPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
   .animate-live-glow     { animation: liveGlow 2s ease-in-out infinite; }
   .animate-urgent-blink  { animation: urgentBlink 1s ease-in-out infinite; }
+}
+
+/* ============================================================
+   Premium UI — logo glow, glass card, inputs, button
+   ============================================================ */
+
+.logo-glow {
+  position: relative;
+  z-index: 0;
+}
+.logo-glow::before {
+  content: '';
+  position: absolute;
+  inset: -36px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.24) 0%, transparent 65%);
+  filter: blur(14px);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.btn-premium {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(150deg, #4f95ff 0%, #2563eb 52%, #1e3a8a 100%);
+  box-shadow:
+    0 4px 20px rgba(37, 99, 235, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-premium::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 0%, transparent 55%);
+  pointer-events: none;
+}
+.btn-premium:hover:not(:disabled) {
+  box-shadow:
+    0 6px 28px rgba(37, 99, 235, 0.44),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  transform: translateY(-1px);
+}
+.btn-premium:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow:
+    0 2px 12px rgba(37, 99, 235, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.btn-premium:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.input-premium {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.input-premium::placeholder {
+  color: rgba(100, 116, 139, 0.42);
+}
+.input-premium:focus {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.5) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.11), 0 0 20px -4px rgba(59, 130, 246, 0.18);
 }
