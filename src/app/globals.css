@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-dark: #080b14;
+  --color-brand-card: #0d1520;
+  --color-brand-card-2: #111e2e;
+  --color-brand-border: #1c2a3a;
+  --color-brand-gold: #f59e0b;
+  --color-brand-silver: #94a3b8;
+  --color-brand-bronze: #cd7c3a;
+  --color-brand-win: #10b981;
+  --color-brand-draw: #f59e0b;
+  --color-brand-loss: #ef4444;
+  --color-brand-live: #ef4444;
+  --color-brand-accent: #3b82f6;
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes correctPulse {
+    0%   { transform: scale(1); }
+    30%  { transform: scale(1.11); }
+    65%  { transform: scale(0.97); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes countPop {
+    0%   { transform: scale(0.72); opacity: 0; }
+    70%  { transform: scale(1.06); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes liveGlow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    50%       { box-shadow: 0 0 10px 3px rgba(239, 68, 68, 0.13); }
+  }
+
+  @keyframes urgentBlink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.6; }
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-brand-dark);
+    color: #f1f5f9;
+    -webkit-font-smoothing: antialiased;
+    font-family: Inter, system-ui, sans-serif;
+    overscroll-behavior-y: none;
+  }
+
+  a, button, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  input, textarea, select {
+    font-size: 1rem;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .animate-fade-in { animation: fadeIn 0.25s ease-out both; }
+  .animate-slide-up { animation: slideUp 0.3s ease-out both; }
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--color-brand-card) 25%,
+      var(--color-brand-card-2) 50%,
+      var(--color-brand-card) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite linear;
+  }
+
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .pb-nav { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px)); }
+  .touch-target { min-height: 44px; min-width: 44px; }
+
+  .animate-correct-pulse { animation: correctPulse 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+  .animate-count-pop     { animation: countPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+  .animate-live-glow     { animation: liveGlow 2s ease-in-out infinite; }
+  .animate-urgent-blink  { animation: urgentBlink 1s ease-in-out infinite; }
+}

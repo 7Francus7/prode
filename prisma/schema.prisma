@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MatchStatus {
+  SCHEDULED
+  LIVE
+  FINISHED
+}
+
+enum PredictionResult {
+  HOME
+  DRAW
+  AWAY
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  totalPoints   Int       @default(0)
+  isAdmin       Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts         Account[]
+  sessions         Session[]
+  predictions      Prediction[]
+  predictionPoints PredictionPoints[]
+
+  @@index([totalPoints])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Group {
+  id    String @id @default(cuid())
+  name  String @unique
+  label String
+
+  teams   Team[]
+  matches Match[]
+}
+
+model Team {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  code     String  @unique
+  flagCode String
+  groupId  String?
+
+  group       Group?  @relation(fields: [groupId], references: [id])
+  homeMatches Match[] @relation("HomeTeam")
+  awayMatches Match[] @relation("AwayTeam")
+}
+
+model Match {
+  id         String            @id @default(cuid())
+  homeTeamId String
+  awayTeamId String
+  groupId    String?
+  matchDate  DateTime
+  stadium    String
+  city       String
+  country    String
+  status     MatchStatus       @default(SCHEDULED)
+  homeScore  Int?
+  awayScore  Int?
+  winner     PredictionResult?
+  externalId String?           @unique
+  round      String
+
+  homeTeam         Team               @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam         Team               @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  group            Group?             @relation(fields: [groupId], references: [id])
+  predictions      Prediction[]
+  predictionPoints PredictionPoints[]
+
+  @@index([matchDate])
+  @@index([status])
+}
+
+model Prediction {
+  id         String           @id @default(cuid())
+  userId     String
+  matchId    String
+  prediction PredictionResult
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  match            Match             @relation(fields: [matchId], references: [id])
+  predictionPoints PredictionPoints?
+
+  @@unique([userId, matchId])
+  @@index([userId])
+  @@index([matchId])
+}
+
+model PredictionPoints {
+  id           String  @id @default(cuid())
+  userId       String
+  matchId      String
+  predictionId String  @unique
+  points       Int     @default(0)
+  correct      Boolean @default(false)
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  match      Match      @relation(fields: [matchId], references: [id])
+  prediction Prediction @relation(fields: [predictionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, matchId])
+}
