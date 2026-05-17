@@ -16,10 +16,12 @@ export default function ProfilePage() {
   const [name, setName] = useState(session?.user.name ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   async function handleSaveName(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
+    setSaveError("");
     try {
       const res = await fetch("/api/profile", {
         method: "PATCH",
@@ -30,7 +32,12 @@ export default function ProfilePage() {
         await update({ name });
         setSaved(true);
         setTimeout(() => setSaved(false), 2500);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setSaveError(data.error ?? "Error al guardar");
       }
+    } catch {
+      setSaveError("Error de red. Intentá de nuevo.");
     } finally {
       setSaving(false);
     }
@@ -84,12 +91,15 @@ export default function ProfilePage() {
             className={inputCls}
           />
         </div>
+        {saveError && (
+          <p className="text-xs text-red-400">{saveError}</p>
+        )}
         <button
           type="submit"
           disabled={saving || !name.trim()}
           className="w-full min-h-[44px] rounded-xl bg-blue-600 active:bg-blue-700 text-white font-bold text-sm transition-colors disabled:opacity-40"
         >
-          {saving ? "Guardando..." : saved ? "Guardado" : "Guardar nombre"}
+          {saving ? "Guardando..." : saved ? "✓ Guardado" : "Guardar nombre"}
         </button>
       </form>
 

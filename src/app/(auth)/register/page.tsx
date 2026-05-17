@@ -33,6 +33,8 @@ export default function RegisterPage() {
       } else {
         router.push("/login?registered=1");
       }
+    } catch {
+      setError("Error de red. Intentá de nuevo.");
     } finally {
       setLoading(false);
     }

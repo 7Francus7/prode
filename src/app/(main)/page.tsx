@@ -4,6 +4,7 @@ import { isMatchLocked } from "@/lib/utils";
 import MatchCard from "@/components/MatchCard";
 import StatsCards from "@/components/StatsCards";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type { MatchWithTeams } from "@/types";
 import type { PredictionResult } from "@prisma/client";
 
@@ -63,9 +64,21 @@ function getInitials(name: string | null | undefined) {
 
 export default async function HomePage() {
   const session = await auth();
-  const userId = session!.user.id;
-  const { liveMatches, nextMatches, ranking, totalPoints, correctCount } =
-    await getHomeData(userId);
+  if (!session?.user?.id) redirect("/login");
+  const userId = session.user.id;
+
+  let homeData;
+  try {
+    homeData = await getHomeData(userId);
+  } catch (err) {
+    console.error("[home] error:", err);
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <p className="text-slate-500 text-sm">Error al cargar datos. Intentá de nuevo.</p>
+      </div>
+    );
+  }
+  const { liveMatches, nextMatches, ranking, totalPoints, correctCount } = homeData;
 
   const userRank = ranking.findIndex((u) => u.id === userId) + 1;
 
