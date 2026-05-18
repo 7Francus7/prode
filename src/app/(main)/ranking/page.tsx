@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 
 async function getRanking(): Promise<RankingEntry[]> {
   const users = await prisma.user.findMany({
+    where: { isAdmin: false },
     select: {
       id: true,
       name: true,

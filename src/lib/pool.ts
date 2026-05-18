@@ -1,7 +1,7 @@
 import { prisma } from "./prisma";
 
 export async function getPoolStats() {
-  const paidUsersCount = await prisma.user.count({ where: { isPaid: true } });
+  const paidUsersCount = await prisma.user.count({ where: { isPaid: true, isAdmin: false } });
   const inscriptionAmount = Number(process.env.INSCRIPTION_AMOUNT ?? "0");
   const totalPool = paidUsersCount * inscriptionAmount;
   return { paidUsersCount, inscriptionAmount, totalPool };

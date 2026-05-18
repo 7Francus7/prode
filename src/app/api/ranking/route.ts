@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const users = await prisma.user.findMany({
+      where: { isAdmin: false },
       select: {
         id: true,
         name: true,

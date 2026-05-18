@@ -7,7 +7,9 @@ export default async function MainLayout({ children }: { children: React.ReactNo
   if (!session?.user) redirect("/login");
 
   // Admins bypass payment gate
-  if (!session.user.isPaid && !session.user.isAdmin) {
+  if (session.user.isAdmin) redirect("/admin/users");
+
+  if (!session.user.isPaid) {
     redirect("/pending");
   }
 

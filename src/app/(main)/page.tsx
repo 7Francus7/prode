@@ -35,6 +35,7 @@ async function getHomeData(userId: string) {
         take: 5,
       }),
       prisma.user.findMany({
+        where: { isAdmin: false },
         select: { id: true, name: true, totalPoints: true },
         orderBy: { totalPoints: "desc" },
         take: 5,

@@ -30,7 +30,7 @@ export async function GET(
   }
 
   const predictions = await prisma.prediction.findMany({
-    where: { matchId: id },
+    where: { matchId: id, user: { isAdmin: false } },
     include: {
       user: { select: { id: true, name: true, image: true } },
       predictionPoints: { select: { correct: true } },
