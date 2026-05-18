@@ -212,7 +212,9 @@ export default function PredictionsPage() {
                         isCorrect ? "text-emerald-500" : "text-slate-700"
                       )}
                     >
-                      {isCorrect ? "+1 pt" : "0 pts"}
+                      {isCorrect
+                        ? `+${p.predictionPoints!.points} pt${p.predictionPoints!.points !== 1 ? "s" : ""}`
+                        : "0 pts"}
                     </p>
                   )}
                 </div>

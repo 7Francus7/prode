@@ -1,73 +1,140 @@
 "use client";
 
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 import type { SyncResult } from "@/types";
 
+type RecalcResult = { ok: boolean; usersUpdated: number };
+
 export default function AdminSyncPage() {
-  const [result, setResult] = useState<SyncResult | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
+  const [recalcResult, setRecalcResult] = useState<RecalcResult | null>(null);
+  const [loading, setLoading] = useState<"live" | "full" | "recalc" | null>(null);
   const [error, setError] = useState("");
 
   async function runSync(full = false) {
-    setLoading(true);
+    setLoading(full ? "full" : "live");
     setError("");
-    setResult(null);
+    setSyncResult(null);
+    setRecalcResult(null);
     try {
       const res = await fetch(`/api/sync${full ? "?full=true" : ""}`, { method: "GET" });
-      if (res.status === 403) {
-        setError("No tenés permisos de administrador");
-        return;
-      }
-      const data = await res.json();
-      setResult(data);
+      if (res.status === 403) { setError("Sin permisos"); return; }
+      setSyncResult(await res.json());
     } catch {
       setError("Error de red");
     } finally {
-      setLoading(false);
+      setLoading(null);
     }
   }
 
-  return (
-    <div className="space-y-6 max-w-lg">
-      <h1 className="text-xl font-black text-white">⚙️ Admin — Sync</h1>
+  async function runRecalculate() {
+    setLoading("recalc");
+    setError("");
+    setSyncResult(null);
+    setRecalcResult(null);
+    try {
+      const res = await fetch("/api/admin/recalculate", { method: "POST" });
+      if (res.status === 403) { setError("Sin permisos"); return; }
+      setRecalcResult(await res.json());
+    } catch {
+      setError("Error de red");
+    } finally {
+      setLoading(null);
+    }
+  }
 
-      <div className="space-y-3">
+  const busy = loading !== null;
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <p className="text-[10px] uppercase tracking-[0.18em] text-slate-600 mb-1">Admin</p>
+        <h1 className="text-[22px] font-black text-white tracking-tight leading-none">Sync</h1>
+      </div>
+
+      {/* Sync section */}
+      <div className="space-y-2.5">
+        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.14em]">
+          Sincronizar resultados
+        </p>
         <button
           onClick={() => runSync(false)}
-          disabled={loading}
-          className="w-full py-3 rounded-xl bg-brand-card border border-brand-border text-white font-semibold hover:bg-white/5 transition-colors disabled:opacity-50"
+          disabled={busy}
+          className={cn(
+            "w-full py-3 rounded-xl border text-sm font-bold transition-colors",
+            "bg-brand-card border-brand-border text-white hover:bg-brand-card-2 disabled:opacity-50"
+          )}
         >
-          {loading ? "Sincronizando..." : "🔄 Sync partidos en vivo"}
+          {loading === "live" ? "Sincronizando..." : "Sync partidos en vivo"}
         </button>
         <button
           onClick={() => runSync(true)}
-          disabled={loading}
-          className="w-full py-3 rounded-xl bg-amber-500/10 border border-amber-800/50 text-amber-400 font-semibold hover:bg-amber-500/20 transition-colors disabled:opacity-50"
+          disabled={busy}
+          className={cn(
+            "w-full py-3 rounded-xl border text-sm font-bold transition-colors",
+            "bg-amber-500/10 border-amber-800/30 text-amber-400 hover:bg-amber-500/20 disabled:opacity-50"
+          )}
         >
-          🌐 Sync completo (todos los partidos)
+          {loading === "full" ? "Sincronizando..." : "Sync completo (todos los partidos)"}
         </button>
       </div>
 
+      {/* Recalculate section */}
+      <div className="space-y-2.5">
+        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.14em]">
+          Puntos
+        </p>
+        <button
+          onClick={runRecalculate}
+          disabled={busy}
+          className={cn(
+            "w-full py-3 rounded-xl border text-sm font-bold transition-colors",
+            "bg-red-500/8 border-red-900/30 text-red-400 hover:bg-red-500/15 disabled:opacity-50"
+          )}
+        >
+          {loading === "recalc" ? "Recalculando..." : "Recalcular todos los puntos"}
+        </button>
+        <p className="text-[10px] text-slate-700 text-center">
+          Borra y recalcula PredictionPoints de todos los partidos terminados
+        </p>
+      </div>
+
       {error && (
-        <div className="bg-red-900/20 border border-red-800/50 rounded-xl p-4 text-red-400">
-          {error}
+        <div className="rounded-xl p-4 bg-red-900/20 border border-red-800/30">
+          <p className="text-sm text-red-400">{error}</p>
         </div>
       )}
 
-      {result && (
-        <div className="rounded-xl border border-brand-border bg-brand-card p-4 space-y-2 font-mono text-sm">
-          <p className="text-green-400">✓ Sync completado</p>
-          <p className="text-gray-400">Sincronizados: <span className="text-white">{result.synced}</span></p>
-          <p className="text-gray-400">Actualizados: <span className="text-white">{result.updated}</span></p>
-          <p className="text-gray-400">Puntos calculados: <span className="text-white">{result.pointsCalculated}</span></p>
-          {result.errors.length > 0 && (
-            <div>
-              <p className="text-red-400">Errores ({result.errors.length}):</p>
-              {result.errors.map((e, i) => (
-                <p key={i} className="text-red-300 text-xs pl-2">{e}</p>
+      {syncResult && (
+        <div className="rounded-xl border border-brand-border bg-brand-card p-4 space-y-2">
+          <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Sync completado</p>
+          {[
+            { label: "Sincronizados", value: syncResult.synced },
+            { label: "Actualizados", value: syncResult.updated },
+            { label: "Puntos calculados", value: syncResult.pointsCalculated },
+          ].map((row) => (
+            <div key={row.label} className="flex justify-between text-sm">
+              <span className="text-slate-500">{row.label}</span>
+              <span className="text-white font-bold">{row.value}</span>
+            </div>
+          ))}
+          {syncResult.errors.length > 0 && (
+            <div className="pt-2 border-t border-brand-border space-y-1">
+              <p className="text-[11px] text-red-400 font-semibold">Errores ({syncResult.errors.length})</p>
+              {syncResult.errors.map((e, i) => (
+                <p key={i} className="text-[11px] text-red-300 pl-2">{e}</p>
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {recalcResult && (
+        <div className="rounded-xl border border-emerald-800/30 bg-emerald-900/8 p-4">
+          <p className="text-sm font-bold text-emerald-400">
+            Recalculo completado — {recalcResult.usersUpdated} usuario{recalcResult.usersUpdated !== 1 ? "s" : ""} actualizados
+          </p>
         </div>
       )}
     </div>

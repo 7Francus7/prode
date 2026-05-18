@@ -11,7 +11,7 @@ import type { MatchWithTeams } from "@/types";
 import type { PredictionResult } from "@prisma/client";
 
 async function getHomeData(userId: string) {
-  const [liveMatches, nextMatches, ranking, totalPoints, correctCount] =
+  const [liveMatches, nextMatches, ranking, userRecord, correctCount] =
     await Promise.all([
       prisma.match.findMany({
         where: { status: "LIVE" },
@@ -39,13 +39,18 @@ async function getHomeData(userId: string) {
         orderBy: { totalPoints: "desc" },
         take: 5,
       }),
-      prisma.user
-        .findUnique({ where: { id: userId }, select: { totalPoints: true } })
-        .then((u) => u?.totalPoints ?? 0),
+      prisma.user.findUnique({ where: { id: userId }, select: { totalPoints: true } }),
       prisma.predictionPoints.count({ where: { userId, correct: true } }),
     ]);
 
-  return { liveMatches, nextMatches, ranking, totalPoints, correctCount };
+  const totalPoints = userRecord?.totalPoints ?? 0;
+
+  // Count users with strictly more points to get 1-based rank (ties share the same rank)
+  const userRank = totalPoints > 0
+    ? (await prisma.user.count({ where: { totalPoints: { gt: totalPoints } } })) + 1
+    : 0;
+
+  return { liveMatches, nextMatches, ranking, totalPoints, correctCount, userRank };
 }
 
 function toMatchWithTeams(
@@ -80,9 +85,7 @@ export default async function HomePage() {
       </div>
     );
   }
-  const { liveMatches, nextMatches, ranking, totalPoints, correctCount } = homeData;
-
-  const userRank = ranking.findIndex((u) => u.id === userId) + 1;
+  const { liveMatches, nextMatches, ranking, totalPoints, correctCount, userRank } = homeData;
   const globalLocked = isGlobalPredictionLocked();
 
   return (
