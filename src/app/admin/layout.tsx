@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth, signOut } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
@@ -19,10 +19,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           paddingBottom: "0.75rem",
         }}
       >
-        <Link href="/" className="text-[11px] text-slate-500 hover:text-slate-300 transition-colors">
-          ← Volver
-        </Link>
-        <span className="text-[11px] text-slate-700">|</span>
         <nav className="flex gap-4">
           {[
             { href: "/admin/users", label: "Usuarios" },
@@ -39,6 +35,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </Link>
           ))}
         </nav>
+
+        <form
+          action={async () => {
+            "use server";
+            await signOut({ redirectTo: "/login" });
+          }}
+          className="ml-auto"
+        >
+          <button
+            type="submit"
+            className="text-[11px] font-semibold text-slate-600 hover:text-red-400 transition-colors"
+          >
+            Salir
+          </button>
+        </form>
       </div>
       <div className="px-4 py-6 max-w-3xl mx-auto">{children}</div>
     </div>
