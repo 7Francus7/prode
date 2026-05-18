@@ -9,12 +9,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="min-h-screen bg-brand-dark">
       <div
-        className="border-b px-4 py-3 flex items-center gap-4 sticky top-0 z-50"
+        className="border-b px-4 flex items-center gap-4 sticky top-0 z-50"
         style={{
           background: "rgba(8, 12, 22, 0.92)",
           backdropFilter: "blur(16px)",
           WebkitBackdropFilter: "blur(16px)",
           borderColor: "rgba(255,255,255,0.07)",
+          paddingTop: "calc(0.75rem + env(safe-area-inset-top, 0px))",
+          paddingBottom: "0.75rem",
         }}
       >
         <Link href="/" className="text-[11px] text-slate-500 hover:text-slate-300 transition-colors">
