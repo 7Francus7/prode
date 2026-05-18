@@ -44,8 +44,13 @@ export default function RegisterPage() {
       } else {
         // Auto-login after register, then go to pending payment screen
         const { signIn } = await import("next-auth/react");
-        await signIn("credentials", { email, password, redirect: false });
-        router.push("/pending");
+        const loginRes = await signIn("credentials", { email, password, redirect: false });
+        if (loginRes?.error) {
+          // Registration succeeded but auto-login failed — send to login
+          router.push("/login");
+        } else {
+          router.push("/pending");
+        }
       }
     } catch {
       setError("Error de red. Intentá de nuevo.");
