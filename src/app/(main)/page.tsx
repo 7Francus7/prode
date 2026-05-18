@@ -3,15 +3,16 @@ import { prisma } from "@/lib/prisma";
 import { isMatchLocked, isGlobalPredictionLocked } from "@/lib/utils";
 import MatchCard from "@/components/MatchCard";
 import StatsCards from "@/components/StatsCards";
+import MyPositionBanner from "@/components/MyPositionBanner";
 import { PoolBanner } from "@/components/PoolBanner";
 import { GlobalLockCountdown } from "@/components/GlobalLockCountdown";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import type { MatchWithTeams } from "@/types";
+import type { MatchWithTeams, RankingEntry } from "@/types";
 import type { PredictionResult } from "@prisma/client";
 
 async function getHomeData(userId: string) {
-  const [liveMatches, nextMatches, ranking, userRecord, correctCount] =
+  const [liveMatches, nextMatches, ranking, userRecord, correctCount, totalPredictions, totalUsers] =
     await Promise.all([
       prisma.match.findMany({
         where: { status: "LIVE" },
@@ -42,6 +43,8 @@ async function getHomeData(userId: string) {
       }),
       prisma.user.findUnique({ where: { id: userId }, select: { totalPoints: true } }),
       prisma.predictionPoints.count({ where: { userId, correct: true } }),
+      prisma.prediction.count({ where: { userId } }),
+      prisma.user.count({ where: { isAdmin: false } }),
     ]);
 
   const totalPoints = userRecord?.totalPoints ?? 0;
@@ -51,7 +54,7 @@ async function getHomeData(userId: string) {
     ? (await prisma.user.count({ where: { totalPoints: { gt: totalPoints } } })) + 1
     : 0;
 
-  return { liveMatches, nextMatches, ranking, totalPoints, correctCount, userRank };
+  return { liveMatches, nextMatches, ranking, totalPoints, correctCount, userRank, totalPredictions, totalUsers };
 }
 
 function toMatchWithTeams(
@@ -86,8 +89,20 @@ export default async function HomePage() {
       </div>
     );
   }
-  const { liveMatches, nextMatches, ranking, totalPoints, correctCount, userRank } = homeData;
+  const { liveMatches, nextMatches, ranking, totalPoints, correctCount, userRank, totalPredictions, totalUsers } = homeData;
   const globalLocked = isGlobalPredictionLocked();
+
+  const inTopVisible = ranking.some((u) => u.id === userId);
+  const myEntry: RankingEntry | null = userRank > 0 ? {
+    rank: userRank,
+    id: userId,
+    name: session.user.name ?? null,
+    image: session.user.image ?? null,
+    totalPoints,
+    correctPredictions: correctCount,
+    totalPredictions,
+    accuracy: totalPredictions > 0 ? Math.round((correctCount / totalPredictions) * 100) : 0,
+  } : null;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -180,6 +195,11 @@ export default async function HomePage() {
           <path d="M9 18l6-6-6-6" />
         </svg>
       </Link>
+
+      {/* My position banner — only when not visible in top ranking */}
+      {myEntry && !inTopVisible && (
+        <MyPositionBanner entry={myEntry} total={totalUsers} />
+      )}
 
       {/* Mini ranking */}
       <section>

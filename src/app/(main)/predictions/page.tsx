@@ -8,6 +8,7 @@ const FILTERS = [
   { key: "all", label: "Todas" },
   { key: "correct", label: "Aciertos" },
   { key: "wrong", label: "Errores" },
+  { key: "pending", label: "Pendientes" },
 ];
 
 const PREDICTION_LABEL: Record<string, string> = {
@@ -48,7 +49,7 @@ export default function PredictionsPage() {
     (p) => p.predictionPoints != null && !p.predictionPoints.correct
   ).length;
   const pending = predictions.filter((p) => p.predictionPoints == null).length;
-  const accuracy = total > 0 ? Math.round((correct / (correct + wrong || 1)) * 100) : 0;
+  const accuracy = (correct + wrong) > 0 ? Math.round((correct / (correct + wrong)) * 100) : null;
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -65,7 +66,7 @@ export default function PredictionsPage() {
           { label: "Total", value: total, color: "text-white" },
           { label: "Aciertos", value: correct, color: "text-emerald-400" },
           { label: "Errores", value: wrong, color: "text-red-500" },
-          { label: "Efectiv.", value: `${accuracy}%`, color: "text-blue-400" },
+          { label: "Efectiv.", value: accuracy !== null ? `${accuracy}%` : "—", color: "text-blue-400" },
         ].map((s) => (
           <div
             key={s.label}

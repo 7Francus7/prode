@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import MatchCard from "@/components/MatchCard";
 import GroupStandings from "@/components/GroupStandings";
-import { cn } from "@/lib/utils";
+import { cn, isGlobalPredictionLocked } from "@/lib/utils";
 import type { MatchWithTeams } from "@/types";
 
 const GROUP_TABS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
@@ -57,9 +57,7 @@ export default function FixturePage() {
   const [matches, setMatches] = useState<MatchWithTeams[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const globalLocked = process.env.NEXT_PUBLIC_LOCK_DATE
-    ? new Date() >= new Date(process.env.NEXT_PUBLIC_LOCK_DATE)
-    : false;
+  const globalLocked = isGlobalPredictionLocked();
 
   useEffect(() => {
     setLoading(true);

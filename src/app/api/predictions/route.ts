@@ -64,7 +64,9 @@ export async function GET(request: Request) {
         ? { predictionPoints: { correct: true } }
         : filter === "wrong"
           ? { predictionPoints: { correct: false } }
-          : {}),
+          : filter === "pending"
+            ? { predictionPoints: null }
+            : {}),
     },
     include: {
       match: { include: { homeTeam: true, awayTeam: true, group: true } },

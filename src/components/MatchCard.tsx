@@ -62,6 +62,7 @@ export default function MatchCard({
     match.myPrediction ?? null
   );
   const [loading, setLoading] = useState<PredictionResult | null>(null);
+  const [predError, setPredError] = useState<string | null>(null);
   const [showPicks, setShowPicks] = useState(false);
   const [picks, setPicks] = useState<PickEntry[] | null>(null);
   const [picksLoading, setPicksLoading] = useState(false);
@@ -79,6 +80,7 @@ export default function MatchCard({
     async (value: PredictionResult) => {
       if (locked || !isAuthenticated || loading) return;
       setLoading(value);
+      setPredError(null);
       try {
         const res = await fetch("/api/predictions", {
           method: "POST",
@@ -88,7 +90,11 @@ export default function MatchCard({
         if (res.ok) {
           setMyPrediction(value);
           onPredictionSuccess?.(match.id, value);
+        } else {
+          setPredError("No se pudo guardar tu predicción. Intentá de nuevo.");
         }
+      } catch {
+        setPredError("No se pudo guardar tu predicción. Intentá de nuevo.");
       } finally {
         setLoading(null);
       }
@@ -239,21 +245,28 @@ export default function MatchCard({
                     {globalLocked && !perMatchLocked ? "Predicciones cerradas" : "Predicción cerrada"}
                   </p>
                 ) : (
-                  <div className="flex gap-1.5">
-                    {(["HOME", "DRAW", "AWAY"] as PredictionResult[]).map((val) => (
-                      <PredictionButton
-                        key={val}
-                        label={PREDICTION_LABELS[val](match.homeTeam.code, match.awayTeam.code)}
-                        value={val}
-                        selected={myPrediction === val}
-                        correct={finished && winner === val ? true : undefined}
-                        wrong={finished && myPrediction === val && winner !== val ? true : undefined}
-                        disabled={locked || !isAuthenticated}
-                        loading={loading === val}
-                        onClick={() => predict(val)}
-                      />
-                    ))}
-                  </div>
+                  <>
+                    <div className="flex gap-1.5">
+                      {(["HOME", "DRAW", "AWAY"] as PredictionResult[]).map((val) => (
+                        <PredictionButton
+                          key={val}
+                          label={PREDICTION_LABELS[val](match.homeTeam.code, match.awayTeam.code)}
+                          value={val}
+                          selected={myPrediction === val}
+                          correct={finished && winner === val ? true : undefined}
+                          wrong={finished && myPrediction === val && winner !== val ? true : undefined}
+                          disabled={locked || !isAuthenticated}
+                          loading={loading === val}
+                          onClick={() => predict(val)}
+                        />
+                      ))}
+                    </div>
+                    {predError && (
+                      <p className="text-[10px] text-red-400 text-center mt-2 animate-fade-in">
+                        {predError}
+                      </p>
+                    )}
+                  </>
                 )}
               </>
             )}
