@@ -30,6 +30,7 @@ model User {
   password      String?
   totalPoints   Int       @default(0)
   isAdmin       Boolean   @default(false)
+  isPaid        Boolean   @default(false)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 

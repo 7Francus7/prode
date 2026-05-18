@@ -42,7 +42,10 @@ export default function RegisterPage() {
       if (!res.ok) {
         setError(data.error ?? "Error al registrarse");
       } else {
-        router.push("/login?registered=1");
+        // Auto-login after register, then go to pending payment screen
+        const { signIn } = await import("next-auth/react");
+        await signIn("credentials", { email, password, redirect: false });
+        router.push("/pending");
       }
     } catch {
       setError("Error de red. Intentá de nuevo.");

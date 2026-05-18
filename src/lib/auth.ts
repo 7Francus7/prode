@@ -33,6 +33,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: user.email,
           image: user.image,
           isAdmin: user.isAdmin,
+          isPaid: user.isPaid,
         };
       },
     }),
@@ -43,12 +44,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id;
         token.isAdmin = user.isAdmin;
+        token.isPaid = user.isPaid;
       }
       return token;
     },
-    session({ session, token }) {
+    async session({ session, token }) {
       session.user.id = token.id as string;
-      session.user.isAdmin = token.isAdmin as boolean;
+
+      // Always fetch fresh isPaid/isAdmin from DB so changes by admin take effect immediately
+      if (token.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { isPaid: true, isAdmin: true },
+        });
+        session.user.isPaid = dbUser?.isPaid ?? false;
+        session.user.isAdmin = dbUser?.isAdmin ?? false;
+      } else {
+        session.user.isPaid = (token.isPaid as boolean) ?? false;
+        session.user.isAdmin = (token.isAdmin as boolean) ?? false;
+      }
+
       return session;
     },
   },

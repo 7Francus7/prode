@@ -6,10 +6,14 @@ export default async function MainLayout({ children }: { children: React.ReactNo
   const session = await auth();
   if (!session?.user) redirect("/login");
 
+  // Admins bypass payment gate
+  if (!session.user.isPaid && !session.user.isAdmin) {
+    redirect("/pending");
+  }
+
   return (
-    <div className="min-h-screen bg-brand-dark">
+    <div className="min-h-screen" style={{ background: "linear-gradient(160deg, #0a0f20 0%, #080b14 35%, #080914 100%)" }}>
       <Navbar />
-      {/* pb-nav = 4.5rem + safe-area-inset-bottom, defined in globals.css */}
       <main className="max-w-2xl mx-auto px-4 pt-4 pb-nav sm:pb-10">
         {children}
       </main>

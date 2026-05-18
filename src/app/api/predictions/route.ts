@@ -10,6 +10,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
+  // Payment gate — admins bypass
+  if (!session.user.isPaid && !session.user.isAdmin) {
+    return NextResponse.json({ error: "Pago pendiente de confirmación" }, { status: 403 });
+  }
+
   const { matchId, prediction } = await request.json();
 
   if (!Object.values(PredictionResult).includes(prediction)) {
