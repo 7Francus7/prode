@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+
+const AR_TZ = "America/Argentina/Buenos_Aires";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -24,12 +24,18 @@ export function getGlobalLockDateISO(): string | null {
 
 export function formatMatchDate(date: Date | string): string {
   const d = new Date(date);
-  return format(d, "EEE d MMM · HH:mm", { locale: es });
+  const weekday = d.toLocaleDateString("es-AR", { weekday: "short", timeZone: AR_TZ });
+  const day = d.toLocaleDateString("es-AR", { day: "numeric", timeZone: AR_TZ });
+  const month = d.toLocaleDateString("es-AR", { month: "short", timeZone: AR_TZ });
+  const time = d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: AR_TZ });
+  return `${weekday} ${day} ${month} · ${time}`;
 }
 
 export function formatMatchDateShort(date: Date | string): string {
   const d = new Date(date);
-  return format(d, "d MMM", { locale: es });
+  const day = d.toLocaleDateString("es-AR", { day: "numeric", timeZone: AR_TZ });
+  const month = d.toLocaleDateString("es-AR", { month: "short", timeZone: AR_TZ });
+  return `${day} ${month}`;
 }
 
 export function getFlagEmoji(flagCode: string): string {
