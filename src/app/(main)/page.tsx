@@ -25,7 +25,7 @@ async function getHomeData(userId: string) {
         orderBy: { matchDate: "asc" },
       }),
       prisma.match.findMany({
-        where: { status: "SCHEDULED", matchDate: { gte: new Date() } },
+        where: { status: "SCHEDULED" },
         include: {
           homeTeam: true,
           awayTeam: true,
