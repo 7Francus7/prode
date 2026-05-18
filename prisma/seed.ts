@@ -100,21 +100,89 @@ const VENUES = [
   { stadium: "BMO Field", city: "Toronto", country: "Canada" },
 ];
 
-// Group stage dates (3 matchdays per group)
-// MD1: Jun 11-14, MD2: Jun 18-21, MD3: Jun 25-27 (simultaneous)
-const GROUP_MATCHDAYS: Record<string, [string, string, string]> = {
-  A: ["2026-06-11T20:00:00Z", "2026-06-18T18:00:00Z", "2026-06-25T22:00:00Z"],
-  B: ["2026-06-12T18:00:00Z", "2026-06-19T15:00:00Z", "2026-06-26T18:00:00Z"],
-  C: ["2026-06-12T22:00:00Z", "2026-06-19T22:00:00Z", "2026-06-26T22:00:00Z"],
-  D: ["2026-06-13T00:00:00Z", "2026-06-20T15:00:00Z", "2026-06-27T18:00:00Z"],
-  E: ["2026-06-13T18:00:00Z", "2026-06-20T18:00:00Z", "2026-06-27T22:00:00Z"],
-  F: ["2026-06-13T22:00:00Z", "2026-06-20T22:00:00Z", "2026-06-27T22:00:00Z"],
-  G: ["2026-06-14T15:00:00Z", "2026-06-21T15:00:00Z", "2026-06-25T18:00:00Z"],
-  H: ["2026-06-14T18:00:00Z", "2026-06-21T18:00:00Z", "2026-06-25T22:00:00Z"],
-  I: ["2026-06-14T22:00:00Z", "2026-06-21T22:00:00Z", "2026-06-26T18:00:00Z"],
-  J: ["2026-06-11T15:00:00Z", "2026-06-18T15:00:00Z", "2026-06-26T22:00:00Z"],
-  K: ["2026-06-11T22:00:00Z", "2026-06-18T22:00:00Z", "2026-06-25T18:00:00Z"],
-  L: ["2026-06-12T15:00:00Z", "2026-06-19T18:00:00Z", "2026-06-25T22:00:00Z"],
+// Official FIFA World Cup 2026 schedule (UTC).
+// md1/md2: [game1_UTC, game2_UTC] — each matchday has 2 different kickoff times.
+// md3: single UTC time — both games kick off simultaneously.
+// Teams order per group: [t0, t1, t2, t3]
+// MD1 pairings: t0 vs t1, t2 vs t3
+// MD2 pairings: t0 vs t2, t1 vs t3
+// MD3 pairings: t0 vs t3, t1 vs t2 (simultaneous)
+const GROUP_MATCHDAYS: Record<
+  string,
+  { md1: [string, string]; md2: [string, string]; md3: string }
+> = {
+  // A: México(t0), Sudáfrica(t1), Corea del Sur(t2), Chequia(t3)
+  A: {
+    md1: ["2026-06-11T19:00:00Z", "2026-06-12T02:00:00Z"],
+    md2: ["2026-06-19T01:00:00Z", "2026-06-18T16:00:00Z"],
+    md3: "2026-06-25T01:00:00Z",
+  },
+  // B: Canadá(t0), Suiza(t1), Catar(t2), Bosnia y Herzegovina(t3)
+  B: {
+    md1: ["2026-06-12T19:00:00Z", "2026-06-13T19:00:00Z"],
+    md2: ["2026-06-18T22:00:00Z", "2026-06-18T19:00:00Z"],
+    md3: "2026-06-24T19:00:00Z",
+  },
+  // C: Brasil(t0), Marruecos(t1), Haití(t2), Escocia(t3)
+  C: {
+    md1: ["2026-06-13T22:00:00Z", "2026-06-14T01:00:00Z"],
+    md2: ["2026-06-20T00:30:00Z", "2026-06-19T22:00:00Z"],
+    md3: "2026-06-24T22:00:00Z",
+  },
+  // D: Estados Unidos(t0), Paraguay(t1), Australia(t2), Turquía(t3)
+  D: {
+    md1: ["2026-06-13T02:00:00Z", "2026-06-14T05:00:00Z"],
+    md2: ["2026-06-19T19:00:00Z", "2026-06-20T03:00:00Z"],
+    md3: "2026-06-26T02:00:00Z",
+  },
+  // E: Alemania(t0), Curaçao(t1), Costa de Marfil(t2), Ecuador(t3)
+  E: {
+    md1: ["2026-06-14T17:00:00Z", "2026-06-14T23:00:00Z"],
+    md2: ["2026-06-20T20:00:00Z", "2026-06-21T00:00:00Z"],
+    md3: "2026-06-25T20:00:00Z",
+  },
+  // F: Países Bajos(t0), Japón(t1), Suecia(t2), Túnez(t3)
+  F: {
+    md1: ["2026-06-14T20:00:00Z", "2026-06-15T02:00:00Z"],
+    md2: ["2026-06-20T16:00:00Z", "2026-06-21T04:00:00Z"],
+    md3: "2026-06-25T22:00:00Z",
+  },
+  // G: Bélgica(t0), Egipto(t1), Irán(t2), Nueva Zelanda(t3)
+  G: {
+    md1: ["2026-06-15T19:00:00Z", "2026-06-16T01:00:00Z"],
+    md2: ["2026-06-21T19:00:00Z", "2026-06-22T01:00:00Z"],
+    md3: "2026-06-27T03:00:00Z",
+  },
+  // H: España(t0), Cabo Verde(t1), Arabia Saudita(t2), Uruguay(t3)
+  H: {
+    md1: ["2026-06-15T16:00:00Z", "2026-06-15T22:00:00Z"],
+    md2: ["2026-06-21T16:00:00Z", "2026-06-21T22:00:00Z"],
+    md3: "2026-06-27T00:00:00Z",
+  },
+  // I: Francia(t0), Senegal(t1), Noruega(t2), Irak(t3)
+  I: {
+    md1: ["2026-06-16T19:00:00Z", "2026-06-16T22:00:00Z"],
+    md2: ["2026-06-22T21:00:00Z", "2026-06-23T00:00:00Z"],
+    md3: "2026-06-26T19:00:00Z",
+  },
+  // J: Argentina(t0), Argelia(t1), Austria(t2), Jordania(t3)
+  J: {
+    md1: ["2026-06-17T01:00:00Z", "2026-06-17T04:00:00Z"],
+    md2: ["2026-06-22T17:00:00Z", "2026-06-23T03:00:00Z"],
+    md3: "2026-06-28T02:00:00Z",
+  },
+  // K: Portugal(t0), Congo RD(t1), Uzbekistán(t2), Colombia(t3)
+  K: {
+    md1: ["2026-06-17T17:00:00Z", "2026-06-18T02:00:00Z"],
+    md2: ["2026-06-23T17:00:00Z", "2026-06-24T02:00:00Z"],
+    md3: "2026-06-27T23:30:00Z",
+  },
+  // L: Inglaterra(t0), Croacia(t1), Ghana(t2), Panamá(t3)
+  L: {
+    md1: ["2026-06-17T20:00:00Z", "2026-06-17T23:00:00Z"],
+    md2: ["2026-06-23T20:00:00Z", "2026-06-23T23:00:00Z"],
+    md3: "2026-06-27T21:00:00Z",
+  },
 };
 
 function getVenue(index: number) {
@@ -161,17 +229,17 @@ async function main() {
 
   for (const groupName of Object.keys(GROUP_MATCHDAYS)) {
     const groupTeams = TEAMS.filter((t) => t.group === groupName);
-    const [md1, md2, md3] = GROUP_MATCHDAYS[groupName as keyof typeof GROUP_MATCHDAYS];
+    const { md1, md2, md3 } = GROUP_MATCHDAYS[groupName as keyof typeof GROUP_MATCHDAYS];
     const groupId = groupMap[groupName];
     const [t0, t1, t2, t3] = groupTeams;
 
     const groupMatches = [
       // Matchday 1
-      { home: t0.code, away: t1.code, date: md1, venueIdx: venueIndex++ },
-      { home: t2.code, away: t3.code, date: md1, venueIdx: venueIndex++ },
+      { home: t0.code, away: t1.code, date: md1[0], venueIdx: venueIndex++ },
+      { home: t2.code, away: t3.code, date: md1[1], venueIdx: venueIndex++ },
       // Matchday 2
-      { home: t0.code, away: t2.code, date: md2, venueIdx: venueIndex++ },
-      { home: t1.code, away: t3.code, date: md2, venueIdx: venueIndex++ },
+      { home: t0.code, away: t2.code, date: md2[0], venueIdx: venueIndex++ },
+      { home: t1.code, away: t3.code, date: md2[1], venueIdx: venueIndex++ },
       // Matchday 3 (simultaneous)
       { home: t0.code, away: t3.code, date: md3, venueIdx: venueIndex++ },
       { home: t1.code, away: t2.code, date: md3, venueIdx: venueIndex++ },
@@ -198,69 +266,69 @@ async function main() {
   }
   console.log(`✅ ${matchCount} group stage matches created`);
 
-  // Knockout placeholder matches
+  // Knockout placeholder matches — official FIFA dates (UTC)
   const tbd = teamMap["USA"]; // placeholder team for TBD slots
   const knockoutRounds = [
     {
       round: "Round of 32",
       matches: 16,
       dates: [
-        "2026-06-30T15:00:00Z",
-        "2026-06-30T19:00:00Z",
-        "2026-07-01T15:00:00Z",
-        "2026-07-01T19:00:00Z",
-        "2026-07-02T15:00:00Z",
+        "2026-06-28T19:00:00Z",
+        "2026-06-29T20:00:00Z",
+        "2026-06-29T20:30:00Z",
+        "2026-06-29T21:00:00Z",
+        "2026-06-30T01:00:00Z",
+        "2026-06-30T17:00:00Z",
+        "2026-07-01T01:00:00Z",
+        "2026-07-01T16:00:00Z",
+        "2026-07-01T20:00:00Z",
+        "2026-07-01T22:00:00Z",
         "2026-07-02T19:00:00Z",
-        "2026-07-03T15:00:00Z",
-        "2026-07-03T19:00:00Z",
-        "2026-07-04T15:00:00Z",
-        "2026-07-04T19:00:00Z",
-        "2026-07-05T15:00:00Z",
-        "2026-07-05T19:00:00Z",
-        "2026-07-06T15:00:00Z",
-        "2026-07-06T19:00:00Z",
-        "2026-07-07T15:00:00Z",
-        "2026-07-07T19:00:00Z",
+        "2026-07-02T23:00:00Z",
+        "2026-07-03T03:00:00Z",
+        "2026-07-03T18:00:00Z",
+        "2026-07-03T22:00:00Z",
+        "2026-07-04T01:30:00Z",
       ],
     },
     {
       round: "Round of 16",
       matches: 8,
       dates: [
-        "2026-07-09T15:00:00Z",
-        "2026-07-09T19:00:00Z",
-        "2026-07-10T15:00:00Z",
-        "2026-07-10T19:00:00Z",
-        "2026-07-11T15:00:00Z",
-        "2026-07-11T19:00:00Z",
-        "2026-07-12T15:00:00Z",
-        "2026-07-12T19:00:00Z",
+        "2026-07-04T17:00:00Z",
+        "2026-07-04T21:00:00Z",
+        "2026-07-05T20:00:00Z",
+        "2026-07-05T22:00:00Z",
+        "2026-07-06T19:00:00Z",
+        "2026-07-06T22:00:00Z",
+        "2026-07-07T16:00:00Z",
+        "2026-07-07T20:00:00Z",
       ],
     },
     {
       round: "Quarter-Finals",
       matches: 4,
       dates: [
-        "2026-07-14T15:00:00Z",
-        "2026-07-14T19:00:00Z",
-        "2026-07-15T15:00:00Z",
-        "2026-07-15T19:00:00Z",
+        "2026-07-09T20:00:00Z",
+        "2026-07-10T19:00:00Z",
+        "2026-07-11T21:00:00Z",
+        "2026-07-12T00:00:00Z",
       ],
     },
     {
       round: "Semi-Finals",
       matches: 2,
-      dates: ["2026-07-17T19:00:00Z", "2026-07-18T19:00:00Z"],
+      dates: ["2026-07-14T18:00:00Z", "2026-07-15T19:00:00Z"],
     },
     {
       round: "Third Place",
       matches: 1,
-      dates: ["2026-07-21T14:00:00Z"],
+      dates: ["2026-07-18T21:00:00Z"],
     },
     {
       round: "Final",
       matches: 1,
-      dates: ["2026-07-22T19:00:00Z"],
+      dates: ["2026-07-19T19:00:00Z"],
     },
   ];
 
