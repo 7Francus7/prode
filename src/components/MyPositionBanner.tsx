@@ -17,7 +17,14 @@ export default function MyPositionBanner({ entry, total }: MyPositionBannerProps
   const rankColor = medalColors[entry.rank] ?? "text-white";
 
   return (
-    <div className="sticky top-0 z-20 -mx-4 px-4 py-3 bg-brand-dark/90 backdrop-blur-md border-b border-brand-border animate-fade-in">
+    <div
+      className="sticky z-20 -mx-4 px-4 bg-brand-dark/90 backdrop-blur-md border-b border-brand-border animate-fade-in"
+      style={{
+        top: "env(safe-area-inset-top, 0px)",
+        paddingTop: "calc(0.75rem + env(safe-area-inset-top, 0px))",
+        paddingBottom: "0.75rem",
+      }}
+    >
       <div className="flex items-center gap-4">
         {/* Rank */}
         <div className="flex flex-col items-center shrink-0">

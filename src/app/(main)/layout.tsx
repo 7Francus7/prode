@@ -16,7 +16,10 @@ export default async function MainLayout({ children }: { children: React.ReactNo
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(160deg, #0a0f20 0%, #080b14 35%, #080914 100%)" }}>
       <Navbar />
-      <main className="max-w-2xl mx-auto px-4 pt-4 pb-nav sm:pb-10">
+      <main
+        className="max-w-2xl mx-auto px-4 pb-nav sm:pt-4 sm:pb-10"
+        style={{ paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))" }}
+      >
         {children}
       </main>
     </div>
