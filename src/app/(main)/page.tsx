@@ -1,8 +1,10 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { isMatchLocked } from "@/lib/utils";
+import { isMatchLocked, isGlobalPredictionLocked } from "@/lib/utils";
 import MatchCard from "@/components/MatchCard";
 import StatsCards from "@/components/StatsCards";
+import { PoolBanner } from "@/components/PoolBanner";
+import { GlobalLockCountdown } from "@/components/GlobalLockCountdown";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { MatchWithTeams } from "@/types";
@@ -81,6 +83,7 @@ export default async function HomePage() {
   const { liveMatches, nextMatches, ranking, totalPoints, correctCount } = homeData;
 
   const userRank = ranking.findIndex((u) => u.id === userId) + 1;
+  const globalLocked = isGlobalPredictionLocked();
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -94,6 +97,12 @@ export default async function HomePage() {
           Prode <span className="text-blue-400">2026</span>
         </h1>
       </div>
+
+      {/* Prize pool */}
+      <PoolBanner />
+
+      {/* Global lock countdown */}
+      <GlobalLockCountdown />
 
       {/* Stats */}
       <StatsCards totalPoints={totalPoints} correctCount={correctCount} rank={userRank} />
@@ -112,7 +121,7 @@ export default async function HomePage() {
           </div>
           <div className="space-y-3">
             {liveMatches.map((m) => (
-              <MatchCard key={m.id} match={toMatchWithTeams(m)} isAuthenticated />
+              <MatchCard key={m.id} match={toMatchWithTeams(m)} isAuthenticated globalLocked={globalLocked} />
             ))}
           </div>
         </section>
@@ -142,7 +151,7 @@ export default async function HomePage() {
         ) : (
           <div className="space-y-3">
             {nextMatches.map((m) => (
-              <MatchCard key={m.id} match={toMatchWithTeams(m)} isAuthenticated />
+              <MatchCard key={m.id} match={toMatchWithTeams(m)} isAuthenticated globalLocked={globalLocked} />
             ))}
           </div>
         )}

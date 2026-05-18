@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { isMatchLocked } from "@/lib/utils";
+import { isMatchLocked, isGlobalPredictionLocked } from "@/lib/utils";
 import { PredictionResult } from "@prisma/client";
 
 export async function POST(request: Request) {
@@ -13,6 +13,11 @@ export async function POST(request: Request) {
   // Payment gate — admins bypass
   if (!session.user.isPaid && !session.user.isAdmin) {
     return NextResponse.json({ error: "Pago pendiente de confirmación" }, { status: 403 });
+  }
+
+  // Global lock — admins bypass
+  if (isGlobalPredictionLocked() && !session.user.isAdmin) {
+    return NextResponse.json({ error: "Las predicciones han cerrado" }, { status: 403 });
   }
 
   const { matchId, prediction } = await request.json();

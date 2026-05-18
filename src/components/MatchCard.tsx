@@ -13,6 +13,7 @@ interface MatchCardProps {
   showPrediction?: boolean;
   isAuthenticated?: boolean;
   onPredictionSuccess?: (matchId: string, prediction: PredictionResult) => void;
+  globalLocked?: boolean;
 }
 
 const PREDICTION_LABELS: Record<PredictionResult, (home: string, away: string) => string> = {
@@ -55,6 +56,7 @@ export default function MatchCard({
   showPrediction = true,
   isAuthenticated = false,
   onPredictionSuccess,
+  globalLocked = false,
 }: MatchCardProps) {
   const [myPrediction, setMyPrediction] = useState<PredictionResult | null>(
     match.myPrediction ?? null
@@ -63,7 +65,10 @@ export default function MatchCard({
   const [showPicks, setShowPicks] = useState(false);
   const [picks, setPicks] = useState<PickEntry[] | null>(null);
   const [picksLoading, setPicksLoading] = useState(false);
-  const [locked, setLocked] = useState(() => isMatchLocked(match.matchDate));
+  const [perMatchLocked, setPerMatchLocked] = useState(() => isMatchLocked(match.matchDate));
+
+  // Combined lock: either the match started OR global predictions closed
+  const locked = perMatchLocked || globalLocked;
 
   const finished = match.status === "FINISHED";
   const isLive = match.status === "LIVE";
@@ -222,7 +227,7 @@ export default function MatchCard({
               <>
                 {!locked && (
                   <div className="mb-2">
-                    <Countdown matchDate={match.matchDate} onLock={() => setLocked(true)} />
+                    <Countdown matchDate={match.matchDate} onLock={() => setPerMatchLocked(true)} />
                   </div>
                 )}
                 {locked && !finished && !myPrediction ? (
@@ -231,7 +236,7 @@ export default function MatchCard({
                       <rect x="3" y="11" width="18" height="11" rx="2" />
                       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                     </svg>
-                    Predicción cerrada
+                    {globalLocked && !perMatchLocked ? "Predicciones cerradas" : "Predicción cerrada"}
                   </p>
                 ) : (
                   <div className="flex gap-1.5">

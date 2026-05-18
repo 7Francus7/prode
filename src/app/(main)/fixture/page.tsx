@@ -57,6 +57,10 @@ export default function FixturePage() {
   const [matches, setMatches] = useState<MatchWithTeams[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const globalLocked = process.env.NEXT_PUBLIC_LOCK_DATE
+    ? new Date() >= new Date(process.env.NEXT_PUBLIC_LOCK_DATE)
+    : false;
+
   useEffect(() => {
     setLoading(true);
     const params = new URLSearchParams();
@@ -147,7 +151,7 @@ export default function FixturePage() {
       ) : (
         <div className="space-y-3">
           {matches.map((m) => (
-            <MatchCard key={m.id} match={m} isAuthenticated={!!session?.user} />
+            <MatchCard key={m.id} match={m} isAuthenticated={!!session?.user} globalLocked={globalLocked} />
           ))}
         </div>
       )}

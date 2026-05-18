@@ -10,6 +10,17 @@ export function isMatchLocked(matchDate: Date | string): boolean {
   return new Date() >= new Date(matchDate);
 }
 
+// Global prediction lock — reads NEXT_PUBLIC_LOCK_DATE (accessible server + client)
+export function isGlobalPredictionLocked(): boolean {
+  const lockDate = process.env.NEXT_PUBLIC_LOCK_DATE;
+  if (!lockDate) return false;
+  return new Date() >= new Date(lockDate);
+}
+
+export function getGlobalLockDateISO(): string | null {
+  return process.env.NEXT_PUBLIC_LOCK_DATE ?? null;
+}
+
 export function formatMatchDate(date: Date | string): string {
   const d = new Date(date);
   return format(d, "EEE, MMM d · HH:mm");

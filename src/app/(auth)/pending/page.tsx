@@ -1,6 +1,8 @@
 import { auth, signOut } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { PaymentPoller } from "./PaymentPoller";
+import { PoolBanner } from "@/components/PoolBanner";
+import { GlobalLockCountdown } from "@/components/GlobalLockCountdown";
 
 const ALIAS = process.env.PAYMENT_ALIAS ?? "alias.banco.ejemplo";
 const CBU = process.env.PAYMENT_CBU ?? "0000000000000000000000";
@@ -53,6 +55,12 @@ export default async function PendingPage() {
 
   return (
     <div className="space-y-4">
+      {/* Prize pool */}
+      <PoolBanner variant="pending" />
+
+      {/* Global lock countdown */}
+      <GlobalLockCountdown variant="pending" />
+
       {/* Status banner */}
       <div
         className="rounded-2xl px-5 py-4 flex items-center gap-4"
