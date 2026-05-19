@@ -26,9 +26,9 @@ const TEAMS = [
   { name: "Chequia", code: "CZE", flagCode: "cz", group: "A" },
   // Group B
   { name: "Canadá", code: "CAN", flagCode: "ca", group: "B" },
-  { name: "Suiza", code: "SUI", flagCode: "ch", group: "B" },
-  { name: "Catar", code: "QAT", flagCode: "qa", group: "B" },
   { name: "Bosnia y Herzegovina", code: "BIH", flagCode: "ba", group: "B" },
+  { name: "Catar", code: "QAT", flagCode: "qa", group: "B" },
+  { name: "Suiza", code: "SUI", flagCode: "ch", group: "B" },
   // Group C
   { name: "Brasil", code: "BRA", flagCode: "br", group: "C" },
   { name: "Marruecos", code: "MAR", flagCode: "ma", group: "C" },
@@ -62,8 +62,8 @@ const TEAMS = [
   // Group I
   { name: "Francia", code: "FRA", flagCode: "fr", group: "I" },
   { name: "Senegal", code: "SEN", flagCode: "sn", group: "I" },
-  { name: "Noruega", code: "NOR", flagCode: "no", group: "I" },
   { name: "Irak", code: "IRQ", flagCode: "iq", group: "I" },
+  { name: "Noruega", code: "NOR", flagCode: "no", group: "I" },
   // Group J
   { name: "Argentina", code: "ARG", flagCode: "ar", group: "J" },
   { name: "Argelia", code: "ALG", flagCode: "dz", group: "J" },
@@ -117,7 +117,7 @@ const GROUP_MATCHDAYS: Record<
     md2: ["2026-06-19T01:00:00Z", "2026-06-18T16:00:00Z"],
     md3: "2026-06-25T01:00:00Z",
   },
-  // B: Canadá(t0), Suiza(t1), Catar(t2), Bosnia y Herzegovina(t3)
+  // B: Canadá(t0), Bosnia y Herzegovina(t1), Catar(t2), Suiza(t3)
   B: {
     md1: ["2026-06-12T19:00:00Z", "2026-06-13T19:00:00Z"],
     md2: ["2026-06-18T22:00:00Z", "2026-06-18T19:00:00Z"],
@@ -159,7 +159,7 @@ const GROUP_MATCHDAYS: Record<
     md2: ["2026-06-21T16:00:00Z", "2026-06-21T22:00:00Z"],
     md3: "2026-06-27T00:00:00Z",
   },
-  // I: Francia(t0), Senegal(t1), Noruega(t2), Irak(t3)
+  // I: Francia(t0), Senegal(t1), Irak(t2), Noruega(t3)
   I: {
     md1: ["2026-06-16T19:00:00Z", "2026-06-16T22:00:00Z"],
     md2: ["2026-06-22T21:00:00Z", "2026-06-23T00:00:00Z"],
