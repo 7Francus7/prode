@@ -51,7 +51,9 @@ export default function MyPositionBanner({ entry, total }: MyPositionBannerProps
             <p className="text-[9px] text-slate-600 uppercase tracking-wider">aciertos</p>
           </div>
           <div className="text-center">
-            <p className="text-[18px] font-black text-amber-400 leading-none">{entry.accuracy}%</p>
+            <p className="text-[18px] font-black text-amber-400 leading-none">
+              {entry.accuracy !== null ? `${entry.accuracy}%` : "—"}
+            </p>
             <p className="text-[9px] text-slate-600 uppercase tracking-wider">efect.</p>
           </div>
         </div>

@@ -9,14 +9,6 @@ import type { MatchWithTeams } from "@/types";
 
 const GROUP_TABS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
 
-const PHASE_TABS = [
-  { key: "groups", label: "Grupos", round: null },
-  { key: "r32", label: "Octavos", round: "Round of 32" },
-  { key: "r16", label: "Cuartos", round: "Round of 16" },
-  { key: "sf", label: "Semis", round: "Semi-Finals" },
-  { key: "final", label: "Final", round: "Final" },
-];
-
 function SkeletonCard() {
   return (
     <div className="rounded-2xl border border-brand-border overflow-hidden bg-brand-card">
@@ -52,7 +44,6 @@ function SkeletonCard() {
 
 export default function FixturePage() {
   const { data: session } = useSession();
-  const [phase, setPhase] = useState("groups");
   const [activeGroup, setActiveGroup] = useState("A");
   const [matches, setMatches] = useState<MatchWithTeams[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,20 +52,11 @@ export default function FixturePage() {
 
   useEffect(() => {
     setLoading(true);
-    const params = new URLSearchParams();
-
-    if (phase === "groups") {
-      params.set("group", activeGroup);
-    } else {
-      const tab = PHASE_TABS.find((t) => t.key === phase);
-      if (tab?.round) params.set("round", tab.round);
-    }
-
-    fetch(`/api/matches?${params}`)
+    fetch(`/api/matches?group=${activeGroup}`)
       .then((r) => r.json())
       .then((data: MatchWithTeams[]) => setMatches(data))
       .finally(() => setLoading(false));
-  }, [phase, activeGroup]);
+  }, [activeGroup]);
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -85,46 +67,26 @@ export default function FixturePage() {
         <h1 className="text-[22px] font-black text-white tracking-tight leading-none">Fixture</h1>
       </div>
 
-      {/* Phase tabs */}
+      {/* Group selector */}
       <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5">
-        {PHASE_TABS.map((t) => (
+        {GROUP_TABS.map((g) => (
           <button
-            key={t.key}
-            onClick={() => setPhase(t.key)}
+            key={g}
+            onClick={() => setActiveGroup(g)}
             className={cn(
-              "flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition-all border",
-              phase === t.key
-                ? "bg-blue-600/15 text-blue-400 border-blue-600/30"
-                : "text-slate-500 border-transparent bg-brand-card hover:text-slate-300 hover:border-brand-border"
+              "flex-shrink-0 w-9 h-9 rounded-xl text-xs font-black transition-all border",
+              activeGroup === g
+                ? "bg-blue-600 text-white border-blue-500"
+                : "bg-brand-card text-slate-500 border-brand-border hover:border-slate-600 hover:text-slate-300"
             )}
           >
-            {t.label}
+            {g}
           </button>
         ))}
       </div>
 
-      {/* Group selector */}
-      {phase === "groups" && (
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5">
-          {GROUP_TABS.map((g) => (
-            <button
-              key={g}
-              onClick={() => setActiveGroup(g)}
-              className={cn(
-                "flex-shrink-0 w-9 h-9 rounded-xl text-xs font-black transition-all border",
-                activeGroup === g
-                  ? "bg-blue-600 text-white border-blue-500"
-                  : "bg-brand-card text-slate-500 border-brand-border hover:border-slate-600 hover:text-slate-300"
-              )}
-            >
-              {g}
-            </button>
-          ))}
-        </div>
-      )}
-
       {/* Group standings */}
-      {phase === "groups" && <GroupStandings groupName={activeGroup} />}
+      <GroupStandings groupName={activeGroup} />
 
       {/* Matches */}
       {loading ? (
@@ -139,12 +101,8 @@ export default function FixturePage() {
               <path d="M12 8v4M12 16h.01" />
             </svg>
           </div>
-          <p className="text-slate-500 text-sm font-medium">
-            {phase === "groups"
-              ? `Sin partidos en Grupo ${activeGroup}`
-              : "Esta fase no está disponible aún"}
-          </p>
-          <p className="text-slate-700 text-xs mt-1">Los partidos se irán habilitando</p>
+          <p className="text-slate-500 text-sm font-medium">Sin partidos en Grupo {activeGroup}</p>
+          <p className="text-slate-700 text-xs mt-1">Los partidos se cargarán próximamente</p>
         </div>
       ) : (
         <div className="space-y-3">

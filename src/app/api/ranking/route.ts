@@ -35,7 +35,7 @@ export async function GET() {
       accuracy:
         u._count.predictions > 0
           ? Math.round((u._count.predictionPoints / u._count.predictions) * 100)
-          : 0,
+          : null,
     }));
 
     return NextResponse.json(ranking);

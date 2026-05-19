@@ -36,7 +36,7 @@ async function getRanking(): Promise<RankingEntry[]> {
     accuracy:
       u._count.predictions > 0
         ? Math.round((u._count.predictionPoints / u._count.predictions) * 100)
-        : 0,
+        : null,
   }));
 }
 

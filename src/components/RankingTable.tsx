@@ -97,7 +97,7 @@ export default function RankingTable({
 
               {/* Accuracy */}
               <span className="text-xs text-slate-600 text-center hidden sm:block">
-                {entry.accuracy}%
+                {entry.accuracy !== null ? `${entry.accuracy}%` : "—"}
               </span>
             </div>
           );

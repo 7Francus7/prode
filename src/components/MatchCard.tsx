@@ -91,7 +91,17 @@ export default function MatchCard({
           setMyPrediction(value);
           onPredictionSuccess?.(match.id, value);
         } else {
-          setPredError("No se pudo guardar tu predicción. Intentá de nuevo.");
+          const body = await res.json().catch(() => ({})) as { error?: string };
+          const msg = body?.error ?? "";
+          if (res.status === 403 && msg.includes("Pago")) {
+            setPredError("Tu acceso todavía no está activo.");
+          } else if (res.status === 403 && msg.includes("cerrado")) {
+            setPredError("Las predicciones ya cerraron.");
+          } else if (res.status === 403) {
+            setPredError("Este partido ya no acepta predicciones.");
+          } else {
+            setPredError("No se pudo guardar. Intentá de nuevo.");
+          }
         }
       } catch {
         setPredError("No se pudo guardar tu predicción. Intentá de nuevo.");

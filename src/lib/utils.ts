@@ -28,7 +28,7 @@ export function formatMatchDate(date: Date | string): string {
   const day = d.toLocaleDateString("es-AR", { day: "numeric", timeZone: AR_TZ });
   const month = d.toLocaleDateString("es-AR", { month: "short", timeZone: AR_TZ });
   const time = d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: AR_TZ });
-  return `${weekday} ${day} ${month} · ${time}`;
+  return `${weekday} ${day} ${month} · ${time} AR`;
 }
 
 export function formatMatchDateShort(date: Date | string): string {

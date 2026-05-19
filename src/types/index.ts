@@ -30,7 +30,7 @@ export type RankingEntry = {
   totalPoints: number;
   correctPredictions: number;
   totalPredictions: number;
-  accuracy: number;
+  accuracy: number | null;
 };
 
 export type SyncResult = {
