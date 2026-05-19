@@ -31,3 +31,33 @@ self.addEventListener("fetch", (e) => {
       .catch(() => caches.match(e.request).then((r) => r ?? Response.error()))
   );
 });
+
+self.addEventListener("push", (e) => {
+  const data = e.data?.json() ?? {};
+  const title = data.title ?? "Prode 2026";
+  const options = {
+    body: data.body ?? "",
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-192.png",
+    data: { url: data.url ?? "/" },
+    requireInteraction: false,
+  };
+  e.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const url = e.notification.data?.url ?? "/";
+  e.waitUntil(
+    clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((list) => {
+        const existing = list.find((c) => "focus" in c);
+        if (existing) {
+          existing.navigate(url);
+          return existing.focus();
+        }
+        return clients.openWindow(url);
+      })
+  );
+});

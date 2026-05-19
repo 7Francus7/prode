@@ -6,6 +6,7 @@ import StatsCards from "@/components/StatsCards";
 import MyPositionBanner from "@/components/MyPositionBanner";
 import { PoolBanner } from "@/components/PoolBanner";
 import { GlobalLockCountdown } from "@/components/GlobalLockCountdown";
+import PushNotificationCard from "@/components/PushNotificationCard";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { MatchWithTeams, RankingEntry } from "@/types";
@@ -122,6 +123,9 @@ export default async function HomePage() {
 
       {/* Global lock countdown */}
       <GlobalLockCountdown />
+
+      {/* Push notifications — only for paid users */}
+      {session.user.isPaid && <PushNotificationCard />}
 
       {/* Stats */}
       <StatsCards totalPoints={totalPoints} correctCount={correctCount} rank={userRank} />

@@ -1,6 +1,7 @@
 import { PrismaClient, MatchStatus, PredictionResult } from "@prisma/client";
 import type { FootballApiProvider } from "./footballApi";
 import type { SyncResult } from "@/types";
+import { sendMatchResultPush } from "./pushService";
 
 function determineWinner(homeScore: number, awayScore: number): PredictionResult {
   if (homeScore > awayScore) return PredictionResult.HOME;
@@ -90,6 +91,8 @@ export class SyncService {
         if (newStatus === MatchStatus.FINISHED && winner && !wasAlreadyFinished) {
           await this.calculatePoints(match.id);
           result.pointsCalculated++;
+          // Fire-and-forget: push result to subscribed users
+          sendMatchResultPush(this.db, match.id).catch(() => {});
         }
       } catch (e) {
         result.errors.push(String(e));
