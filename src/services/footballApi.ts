@@ -72,8 +72,8 @@ function mapFixture(f: ApiFixture): ExternalMatch {
 
   return {
     externalId: String(f.fixture.id),
-    homeTeamCode: f.teams.home.name,
-    awayTeamCode: f.teams.away.name,
+    homeTeamCode: (f.teams.home.code ?? f.teams.home.name) as string,
+    awayTeamCode: (f.teams.away.code ?? f.teams.away.name) as string,
     matchDate: new Date(f.fixture.date),
     stadium: f.fixture.venue?.name ?? "",
     city: f.fixture.venue?.city ?? "",

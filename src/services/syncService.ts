@@ -26,6 +26,36 @@ export class SyncService {
     return this.#syncMatches(await this.api.getWorldCupMatches(2026));
   }
 
+  async #findMatch(ext: Awaited<ReturnType<typeof this.api.getLiveMatches>>[0]) {
+    const byId = await this.db.match.findUnique({ where: { externalId: ext.externalId } });
+    if (byId) return byId;
+
+    // Fallback: seeded matches use custom externalIds — match by team code + date ±2h
+    const [homeTeam, awayTeam] = await Promise.all([
+      this.db.team.findUnique({ where: { code: ext.homeTeamCode } }),
+      this.db.team.findUnique({ where: { code: ext.awayTeamCode } }),
+    ]);
+    if (!homeTeam || !awayTeam) return null;
+
+    const windowStart = new Date(ext.matchDate.getTime() - 2 * 60 * 60 * 1000);
+    const windowEnd = new Date(ext.matchDate.getTime() + 2 * 60 * 60 * 1000);
+
+    const match = await this.db.match.findFirst({
+      where: {
+        homeTeamId: homeTeam.id,
+        awayTeamId: awayTeam.id,
+        matchDate: { gte: windowStart, lte: windowEnd },
+      },
+    });
+
+    if (match) {
+      // Bind numeric API id so future syncs use the fast path
+      await this.db.match.update({ where: { id: match.id }, data: { externalId: ext.externalId } });
+    }
+
+    return match;
+  }
+
   async #syncMatches(
     externalMatches: Awaited<ReturnType<typeof this.api.getLiveMatches>>
   ): Promise<SyncResult> {
@@ -34,7 +64,7 @@ export class SyncService {
 
     for (const ext of externalMatches) {
       try {
-        const match = await this.db.match.findUnique({ where: { externalId: ext.externalId } });
+        const match = await this.#findMatch(ext);
         if (!match) continue;
 
         const newStatus =
