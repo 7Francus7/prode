@@ -18,6 +18,10 @@ export class SyncService {
     return this.#syncMatches(await this.api.getLiveMatches());
   }
 
+  async syncTodayMatches(): Promise<SyncResult> {
+    return this.#syncMatches(await this.api.getTodayMatches());
+  }
+
   async syncAllMatches(): Promise<SyncResult> {
     return this.#syncMatches(await this.api.getWorldCupMatches(2026));
   }

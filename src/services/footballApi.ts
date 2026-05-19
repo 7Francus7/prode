@@ -13,6 +13,7 @@ export interface ExternalMatch {
 export interface FootballApiProvider {
   getWorldCupMatches(season: number): Promise<ExternalMatch[]>;
   getLiveMatches(): Promise<ExternalMatch[]>;
+  getTodayMatches(): Promise<ExternalMatch[]>;
 }
 
 export class ApiFootballProvider implements FootballApiProvider {
@@ -40,6 +41,14 @@ export class ApiFootballProvider implements FootballApiProvider {
   async getLiveMatches(): Promise<ExternalMatch[]> {
     const data = await this.fetch<{ response: ApiFixture[] }>(
       "/fixtures?league=1&live=all"
+    );
+    return data.response.map(mapFixture);
+  }
+
+  async getTodayMatches(): Promise<ExternalMatch[]> {
+    const today = new Date().toISOString().split("T")[0];
+    const data = await this.fetch<{ response: ApiFixture[] }>(
+      `/fixtures?league=1&season=2026&from=${today}&to=${today}`
     );
     return data.response.map(mapFixture);
   }
@@ -79,6 +88,9 @@ export class MockFootballProvider implements FootballApiProvider {
     return [];
   }
   async getLiveMatches(): Promise<ExternalMatch[]> {
+    return [];
+  }
+  async getTodayMatches(): Promise<ExternalMatch[]> {
     return [];
   }
 }

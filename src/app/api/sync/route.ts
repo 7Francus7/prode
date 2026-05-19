@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   }
 
   const service = new SyncService(createFootballApiProvider(), prisma);
-  const result = await service.syncLiveMatches();
+  const result = await service.syncTodayMatches();
   return NextResponse.json(result);
 }
 
