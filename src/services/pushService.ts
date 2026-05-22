@@ -1,15 +1,12 @@
 import webPush from "web-push";
 import type { PrismaClient } from "@prisma/client";
+import { env } from "@/lib/env";
 
 function initVapid(): boolean {
-  const pub = process.env.VAPID_PUBLIC_KEY;
-  const priv = process.env.VAPID_PRIVATE_KEY;
+  const pub = env.VAPID_PUBLIC_KEY;
+  const priv = env.VAPID_PRIVATE_KEY;
   if (!pub || !priv) return false;
-  webPush.setVapidDetails(
-    `mailto:${process.env.VAPID_EMAIL ?? "admin@example.com"}`,
-    pub,
-    priv
-  );
+  webPush.setVapidDetails(`mailto:${env.VAPID_EMAIL}`, pub, priv);
   return true;
 }
 
@@ -35,7 +32,7 @@ async function sendPush(
   } catch (err: unknown) {
     const status = (err as { statusCode?: number }).statusCode;
     if (status === 410 || status === 404) {
-      // Subscription expired — clean up
+      // Subscription expired, clean it up.
       await db.pushSubscription.delete({ where: { id: subId } }).catch(() => {});
     }
   }
@@ -58,13 +55,13 @@ export async function sendMatchResultPush(
     select: { userId: true, correct: true },
   });
 
-  const userIds = points.map((p) => p.userId);
+  const userIds = points.map((point) => point.userId);
   const subs = await db.pushSubscription.findMany({
     where: { userId: { in: userIds } },
   });
 
-  const subsByUser = new Map(subs.map((s) => [s.userId, s]));
-  const correctByUser = new Map(points.map((p) => [p.userId, p.correct]));
+  const subsByUser = new Map(subs.map((sub) => [sub.userId, sub]));
+  const correctByUser = new Map(points.map((point) => [point.userId, point.correct]));
 
   const home = match.homeTeam.code;
   const away = match.awayTeam.code;
@@ -92,9 +89,9 @@ export async function sendGlobalLockReminder(db: PrismaClient): Promise<void> {
 
   await Promise.allSettled(
     subs
-      .filter((s) => s.user.isPaid)
-      .map((s) =>
-        sendPush(db, s.id, s.endpoint, s.p256dh, s.auth, {
+      .filter((sub) => sub.user.isPaid)
+      .map((sub) =>
+        sendPush(db, sub.id, sub.endpoint, sub.p256dh, sub.auth, {
           title: "¡Las predicciones cierran pronto!",
           body: "Asegurate de haber predicho todos los partidos del grupo.",
           url: "/fixture",

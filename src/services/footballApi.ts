@@ -1,3 +1,5 @@
+import { env } from "@/lib/env";
+
 export interface ExternalMatch {
   externalId: string;
   homeTeamCode: string;
@@ -5,6 +7,7 @@ export interface ExternalMatch {
   matchDate: Date;
   stadium: string;
   city: string;
+  country: string;
   status: "SCHEDULED" | "LIVE" | "FINISHED";
   homeScore: number | null;
   awayScore: number | null;
@@ -77,6 +80,7 @@ function mapFixture(f: ApiFixture): ExternalMatch {
     matchDate: new Date(f.fixture.date),
     stadium: f.fixture.venue?.name ?? "",
     city: f.fixture.venue?.city ?? "",
+    country: f.fixture.venue?.country ?? "",
     status: statusMap[f.fixture.status.short] ?? "SCHEDULED",
     homeScore: f.goals.home,
     awayScore: f.goals.away,
@@ -96,7 +100,7 @@ export class MockFootballProvider implements FootballApiProvider {
 }
 
 export function createFootballApiProvider(): FootballApiProvider {
-  const key = process.env.FOOTBALL_API_KEY;
+  const key = env.FOOTBALL_API_KEY;
   if (!key || key === "mock") return new MockFootballProvider();
   return new ApiFootballProvider(key);
 }

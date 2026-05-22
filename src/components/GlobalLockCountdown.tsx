@@ -11,10 +11,10 @@ type Phase = "days" | "hours" | "minutes" | "urgent" | "locked";
 
 function getPhase(ms: number): Phase {
   if (ms <= 0) return "locked";
-  const h = ms / 3_600_000;
-  if (h >= 24) return "days";
-  if (h >= 2) return "hours";
-  if (h >= 0.5) return "minutes";
+  const hours = ms / 3_600_000;
+  if (hours >= 24) return "days";
+  if (hours >= 2) return "hours";
+  if (hours >= 0.5) return "minutes";
   return "urgent";
 }
 
@@ -31,9 +31,7 @@ function formatParts(ms: number) {
 function Unit({ value, label }: { value: string; label: string }) {
   return (
     <div className="flex flex-col items-center gap-0.5">
-      <span
-        className="text-[22px] font-black tabular-nums leading-none tracking-tight text-white"
-      >
+      <span className="text-[22px] font-black tabular-nums leading-none tracking-tight text-white">
         {value}
       </span>
       <span
@@ -61,8 +59,6 @@ export function GlobalLockCountdown({ variant = "home" }: Props) {
   const lockDateISO = process.env.NEXT_PUBLIC_LOCK_DATE;
   const router = useRouter();
   const refreshedRef = useRef(false);
-
-  // null = not yet hydrated (avoids SSR mismatch)
   const [ms, setMs] = useState<number | null>(null);
 
   useEffect(() => {
@@ -75,7 +71,7 @@ export function GlobalLockCountdown({ variant = "home" }: Props) {
       setMs(remaining);
       if (remaining <= 0 && !refreshedRef.current) {
         refreshedRef.current = true;
-        router.refresh(); // re-render server components with globalLocked=true
+        router.refresh();
       }
     };
 
@@ -89,7 +85,6 @@ export function GlobalLockCountdown({ variant = "home" }: Props) {
   const phase = getPhase(ms);
   const parts = formatParts(Math.max(ms, 0));
 
-  // ── LOCKED state ────────────────────────────────────────────────
   if (phase === "locked") {
     return (
       <div
@@ -129,7 +124,6 @@ export function GlobalLockCountdown({ variant = "home" }: Props) {
     );
   }
 
-  // ── Colors by phase ──────────────────────────────────────────────
   const isUrgent = phase === "urgent";
   const isSoon = phase === "minutes" || phase === "urgent";
 
@@ -157,7 +151,6 @@ export function GlobalLockCountdown({ variant = "home" }: Props) {
       ? "rgba(245,158,11,0.7)"
       : "rgba(96,165,250,0.65)";
 
-  // Headline label
   const headline =
     variant === "pending"
       ? isUrgent
@@ -194,7 +187,6 @@ export function GlobalLockCountdown({ variant = "home" }: Props) {
         </span>
       </div>
 
-      {/* Time units */}
       <div className="flex items-start justify-center gap-2">
         {phase === "days" && (
           <>

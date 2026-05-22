@@ -1,18 +1,28 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+
+const registerSchema = z.object({
+  name: z.string().trim().min(1, "El nombre es requerido").max(40, "El nombre es demasiado largo"),
+  email: z.email("Email inválido").transform((value) => value.trim().toLowerCase()),
+  password: z
+    .string()
+    .min(6, "La contraseña debe tener al menos 6 caracteres")
+    .max(72, "La contraseña es demasiado larga"),
+});
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password } = await request.json();
+    const body = await request.json();
+    const parsed = registerSchema.safeParse(body);
 
-    if (!name || !email || !password) {
-      return NextResponse.json({ error: "Todos los campos son requeridos" }, { status: 400 });
+    if (!parsed.success) {
+      const firstIssue = parsed.error.issues[0];
+      return NextResponse.json({ error: firstIssue?.message ?? "Datos inválidos" }, { status: 400 });
     }
 
-    if (password.length < 6) {
-      return NextResponse.json({ error: "La contraseña debe tener al menos 6 caracteres" }, { status: 400 });
-    }
+    const { name, email, password } = parsed.data;
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {

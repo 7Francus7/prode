@@ -3,12 +3,13 @@ import { redirect } from "next/navigation";
 import { PaymentPoller } from "./PaymentPoller";
 import { PoolBanner } from "@/components/PoolBanner";
 import { GlobalLockCountdown } from "@/components/GlobalLockCountdown";
+import { env } from "@/lib/env";
 
-const ALIAS = process.env.PAYMENT_ALIAS ?? "alias.banco.ejemplo";
-const CBU = process.env.PAYMENT_CBU ?? "0000000000000000000000";
-const OWNER = process.env.PAYMENT_OWNER ?? "Nombre Titular";
-const BANK = process.env.PAYMENT_BANK ?? "Banco";
-const AMOUNT = process.env.INSCRIPTION_AMOUNT ?? "???";
+const ALIAS = env.PAYMENT_ALIAS;
+const CBU = env.PAYMENT_CBU;
+const OWNER = env.PAYMENT_OWNER;
+const BANK = env.PAYMENT_BANK;
+const AMOUNT = env.INSCRIPTION_AMOUNT?.toString() ?? "???";
 
 const GLASS: React.CSSProperties = {
   background: "rgba(9, 14, 26, 0.78)",
@@ -43,7 +44,6 @@ export default async function PendingPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  // If admin activated the user, auto-redirect
   if (session.user.isPaid) redirect("/");
 
   const userName = session.user.name ?? "Participante";
@@ -55,13 +55,9 @@ export default async function PendingPage() {
 
   return (
     <div className="space-y-4">
-      {/* Prize pool */}
       <PoolBanner variant="pending" />
-
-      {/* Global lock countdown */}
       <GlobalLockCountdown variant="pending" />
 
-      {/* Status banner */}
       <div
         className="rounded-2xl px-5 py-4 flex items-center gap-4"
         style={{
@@ -88,7 +84,6 @@ export default async function PendingPage() {
         </div>
       </div>
 
-      {/* Payment instructions */}
       <div className="rounded-2xl p-6 space-y-1" style={GLASS}>
         <div className="mb-4">
           <h2 className="text-[15px] font-bold text-white tracking-tight">
@@ -120,10 +115,8 @@ export default async function PendingPage() {
         </div>
       </div>
 
-      {/* Auto check indicator */}
       <PaymentPoller />
 
-      {/* Footer */}
       <form action={handleSignOut}>
         <button
           type="submit"

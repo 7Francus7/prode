@@ -1,15 +1,21 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { MatchStatus, PredictionResult } from "@prisma/client";
-import { SyncService } from "@/services/syncService";
-import { MockFootballProvider } from "@/services/footballApi";
+import { MatchStatus } from "@prisma/client";
+import {
+  calculateMatchPredictionPoints,
+  clearMatchPredictionPoints,
+  determineWinner,
+} from "@/lib/matchPoints";
+import { z } from "zod";
 
-function determineWinner(homeScore: number, awayScore: number): PredictionResult {
-  if (homeScore > awayScore) return PredictionResult.HOME;
-  if (awayScore > homeScore) return PredictionResult.AWAY;
-  return PredictionResult.DRAW;
-}
+const updateMatchSchema = z.object({
+  homeScore: z.number().int().min(0, "Score inválido").optional(),
+  awayScore: z.number().int().min(0, "Score inválido").optional(),
+  status: z.nativeEnum(MatchStatus, {
+    error: "Estado inválido",
+  }).optional(),
+});
 
 export async function PATCH(
   request: Request,
@@ -21,25 +27,17 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  const body = await request.json();
-  const { homeScore, awayScore, status } = body as {
-    homeScore?: number;
-    awayScore?: number;
-    status?: MatchStatus;
-  };
+  const parsed = updateMatchSchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Payload inválido" }, { status: 400 });
+  }
 
-  if (homeScore !== undefined && (typeof homeScore !== "number" || homeScore < 0 || !Number.isInteger(homeScore))) {
-    return NextResponse.json({ error: "Score inválido" }, { status: 400 });
-  }
-  if (awayScore !== undefined && (typeof awayScore !== "number" || awayScore < 0 || !Number.isInteger(awayScore))) {
-    return NextResponse.json({ error: "Score inválido" }, { status: 400 });
-  }
-  if (status && !Object.values(MatchStatus).includes(status)) {
-    return NextResponse.json({ error: "Estado inválido" }, { status: 400 });
-  }
+  const { homeScore, awayScore, status } = parsed.data;
 
   const match = await prisma.match.findUnique({ where: { id } });
-  if (!match) return NextResponse.json({ error: "Partido no encontrado" }, { status: 404 });
+  if (!match) {
+    return NextResponse.json({ error: "Partido no encontrado" }, { status: 404 });
+  }
 
   const newHomeScore = homeScore !== undefined ? homeScore : match.homeScore;
   const newAwayScore = awayScore !== undefined ? awayScore : match.awayScore;
@@ -56,36 +54,12 @@ export async function PATCH(
     include: { homeTeam: true, awayTeam: true, group: true },
   });
 
+  if (match.status === MatchStatus.FINISHED || newStatus === MatchStatus.FINISHED) {
+    await clearMatchPredictionPoints(prisma, id);
+  }
+
   if (newStatus === MatchStatus.FINISHED && winner && match.groupId) {
-    // Delete existing points for this match before recalculating
-    const existingPoints = await prisma.predictionPoints.findMany({ where: { matchId: id } });
-    if (existingPoints.length > 0) {
-      await prisma.predictionPoints.deleteMany({ where: { matchId: id } });
-      const affectedUsers = [...new Set(existingPoints.map((p) => p.userId))];
-      for (const userId of affectedUsers) {
-        const agg = await prisma.predictionPoints.aggregate({
-          where: { userId },
-          _sum: { points: true },
-        });
-        await prisma.user.update({ where: { id: userId }, data: { totalPoints: agg._sum.points ?? 0 } });
-      }
-    }
-    const svc = new SyncService(new MockFootballProvider(), prisma);
-    await svc.calculatePoints(id);
-  } else if (match.status === MatchStatus.FINISHED && newStatus !== MatchStatus.FINISHED) {
-    // Reverted from finished — clear points
-    const existingPoints = await prisma.predictionPoints.findMany({ where: { matchId: id } });
-    if (existingPoints.length > 0) {
-      await prisma.predictionPoints.deleteMany({ where: { matchId: id } });
-      const affectedUsers = [...new Set(existingPoints.map((p) => p.userId))];
-      for (const userId of affectedUsers) {
-        const agg = await prisma.predictionPoints.aggregate({
-          where: { userId },
-          _sum: { points: true },
-        });
-        await prisma.user.update({ where: { id: userId }, data: { totalPoints: agg._sum.points ?? 0 } });
-      }
-    }
+    await calculateMatchPredictionPoints(prisma, id);
   }
 
   return NextResponse.json(updated);

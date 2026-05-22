@@ -60,6 +60,7 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
@@ -69,6 +70,8 @@ model Session {
   expires      DateTime
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model VerificationToken {
@@ -124,6 +127,7 @@ model Match {
 
   @@index([matchDate])
   @@index([status])
+  @@index([status, matchDate])
 }
 
 model Prediction {
@@ -156,6 +160,7 @@ model PredictionPoints {
   prediction Prediction @relation(fields: [predictionId], references: [id], onDelete: Cascade)
 
   @@unique([userId, matchId])
+  @@index([userId, correct])
 }
 
 model PushSubscription {

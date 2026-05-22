@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { cn, isMatchLocked, formatMatchDate, getFlagEmoji } from "@/lib/utils";
+import { useCallback, useState } from "react";
+import { cn, formatMatchDate, getFlagEmoji, isMatchLocked } from "@/lib/utils";
 import Countdown from "./Countdown";
 import StatusBadge from "./StatusBadge";
 import PredictionButton from "./PredictionButton";
@@ -38,12 +38,14 @@ function Avatar({ name, image }: { name: string | null; image: string | null }) 
       />
     );
   }
+
   const initials = (name ?? "?")
     .split(" ")
-    .map((w) => w[0])
+    .map((word) => word[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
+
   return (
     <div className="w-6 h-6 rounded-full bg-brand-card-2 border border-brand-border flex items-center justify-center text-[9px] font-black text-slate-400 shrink-0">
       {initials}
@@ -58,9 +60,7 @@ export default function MatchCard({
   onPredictionSuccess,
   globalLocked = false,
 }: MatchCardProps) {
-  const [myPrediction, setMyPrediction] = useState<PredictionResult | null>(
-    match.myPrediction ?? null
-  );
+  const [myPrediction, setMyPrediction] = useState<PredictionResult | null>(match.myPrediction ?? null);
   const [loading, setLoading] = useState<PredictionResult | null>(null);
   const [predError, setPredError] = useState<string | null>(null);
   const [showPicks, setShowPicks] = useState(false);
@@ -68,9 +68,7 @@ export default function MatchCard({
   const [picksLoading, setPicksLoading] = useState(false);
   const [perMatchLocked, setPerMatchLocked] = useState(() => isMatchLocked(match.matchDate));
 
-  // Combined lock: either the match started OR global predictions closed
   const locked = perMatchLocked || globalLocked;
-
   const finished = match.status === "FINISHED";
   const isLive = match.status === "LIVE";
   const winner = match.winner as PredictionResult | null;
@@ -79,25 +77,29 @@ export default function MatchCard({
   const predict = useCallback(
     async (value: PredictionResult) => {
       if (locked || !isAuthenticated || loading) return;
+
       setLoading(value);
       setPredError(null);
+
       try {
-        const res = await fetch("/api/predictions", {
+        const response = await fetch("/api/predictions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ matchId: match.id, prediction: value }),
         });
-        if (res.ok) {
+
+        if (response.ok) {
           setMyPrediction(value);
           onPredictionSuccess?.(match.id, value);
         } else {
-          const body = await res.json().catch(() => ({})) as { error?: string };
-          const msg = body?.error ?? "";
-          if (res.status === 403 && msg.includes("Pago")) {
+          const body = await response.json().catch(() => ({})) as { error?: string };
+          const message = body.error ?? "";
+
+          if (response.status === 403 && message.includes("Pago")) {
             setPredError("Tu acceso todavía no está activo.");
-          } else if (res.status === 403 && msg.includes("cerrado")) {
+          } else if (response.status === 403 && message.includes("cerrad")) {
             setPredError("Las predicciones ya cerraron.");
-          } else if (res.status === 403) {
+          } else if (response.status === 403) {
             setPredError("Este partido ya no acepta predicciones.");
           } else {
             setPredError("No se pudo guardar. Intentá de nuevo.");
@@ -116,19 +118,20 @@ export default function MatchCard({
     if (!showPicks && picks === null) {
       setPicksLoading(true);
       try {
-        const res = await fetch(`/api/matches/${match.id}/picks`);
-        if (res.ok) setPicks(await res.json());
-        else setPicks([]);
+        const response = await fetch(`/api/matches/${match.id}/picks`);
+        const data = await response.json().catch(() => null);
+        setPicks(response.ok && Array.isArray(data) ? data : []);
       } finally {
         setPicksLoading(false);
       }
     }
-    setShowPicks((v) => !v);
+    setShowPicks((value) => !value);
   }, [showPicks, picks, match.id]);
 
   const homeWon = finished && winner === "HOME";
   const awayWon = finished && winner === "AWAY";
   const isDraw = finished && winner === "DRAW";
+  const venueLabel = [match.stadium, match.city].filter(Boolean).join(" · ") || "Sede por confirmar";
 
   return (
     <div
@@ -139,7 +142,6 @@ export default function MatchCard({
           : "border-brand-border"
       )}
     >
-      {/* Header */}
       <div className="flex items-center justify-between px-4 pt-3.5 pb-0">
         <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-[0.14em]">
           {match.group ? match.group.label : match.round}
@@ -154,11 +156,8 @@ export default function MatchCard({
         </div>
       </div>
 
-      {/* Teams + score */}
       <div className="px-4 pt-3 pb-3">
         <div className="flex items-center">
-
-          {/* Home */}
           <div className="flex-1 flex flex-col items-center gap-1.5">
             <span className="text-[40px] leading-none">{getFlagEmoji(match.homeTeam.flagCode)}</span>
             <span
@@ -174,7 +173,6 @@ export default function MatchCard({
             </span>
           </div>
 
-          {/* Center */}
           <div className="flex flex-col items-center gap-1.5 min-w-[84px]">
             {finished || isLive ? (
               <div className="flex items-center gap-2.5">
@@ -204,7 +202,6 @@ export default function MatchCard({
             </span>
           </div>
 
-          {/* Away */}
           <div className="flex-1 flex flex-col items-center gap-1.5">
             <span className="text-[40px] leading-none">{getFlagEmoji(match.awayTeam.flagCode)}</span>
             <span
@@ -221,13 +218,11 @@ export default function MatchCard({
           </div>
         </div>
 
-        {/* Venue */}
         <p className="text-center text-[10px] text-slate-700 mt-2.5 truncate px-4">
-          {match.stadium} · {match.city}
+          {venueLabel}
         </p>
       </div>
 
-      {/* Prediction / Knockout section */}
       {showPrediction && (
         <div className="px-3 pb-3 border-t border-brand-border">
           <div className="pt-2.5">
@@ -257,17 +252,17 @@ export default function MatchCard({
                 ) : (
                   <>
                     <div className="flex gap-1.5">
-                      {(["HOME", "DRAW", "AWAY"] as PredictionResult[]).map((val) => (
+                      {(["HOME", "DRAW", "AWAY"] as PredictionResult[]).map((value) => (
                         <PredictionButton
-                          key={val}
-                          label={PREDICTION_LABELS[val](match.homeTeam.code, match.awayTeam.code)}
-                          value={val}
-                          selected={myPrediction === val}
-                          correct={finished && winner === val ? true : undefined}
-                          wrong={finished && myPrediction === val && winner !== val ? true : undefined}
+                          key={value}
+                          label={PREDICTION_LABELS[value](match.homeTeam.code, match.awayTeam.code)}
+                          value={value}
+                          selected={myPrediction === value}
+                          correct={finished && winner === value ? true : undefined}
+                          wrong={finished && myPrediction === value && winner !== value ? true : undefined}
                           disabled={locked || !isAuthenticated}
-                          loading={loading === val}
-                          onClick={() => predict(val)}
+                          loading={loading === value}
+                          onClick={() => predict(value)}
                         />
                       ))}
                     </div>
@@ -284,7 +279,6 @@ export default function MatchCard({
         </div>
       )}
 
-      {/* Picks section — only for group stage matches, only when locked */}
       {isGroupStage && locked && isAuthenticated && (
         <div className="border-t border-brand-border">
           <button

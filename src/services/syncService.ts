@@ -1,13 +1,12 @@
-import { PrismaClient, MatchStatus, PredictionResult } from "@prisma/client";
+import { PrismaClient, MatchStatus } from "@prisma/client";
+import {
+  calculateMatchPredictionPoints,
+  clearMatchPredictionPoints,
+  determineWinner,
+} from "@/lib/matchPoints";
 import type { FootballApiProvider } from "./footballApi";
 import type { SyncResult } from "@/types";
 import { sendMatchResultPush } from "./pushService";
-
-function determineWinner(homeScore: number, awayScore: number): PredictionResult {
-  if (homeScore > awayScore) return PredictionResult.HOME;
-  if (awayScore > homeScore) return PredictionResult.AWAY;
-  return PredictionResult.DRAW;
-}
 
 export class SyncService {
   constructor(
@@ -31,7 +30,7 @@ export class SyncService {
     const byId = await this.db.match.findUnique({ where: { externalId: ext.externalId } });
     if (byId) return byId;
 
-    // Fallback: seeded matches use custom externalIds — match by team code + date ±2h
+    // Fallback: seeded matches use custom externalIds, so match by team code plus date ±2h.
     const [homeTeam, awayTeam] = await Promise.all([
       this.db.team.findUnique({ where: { code: ext.homeTeamCode } }),
       this.db.team.findUnique({ where: { code: ext.awayTeamCode } }),
@@ -50,7 +49,7 @@ export class SyncService {
     });
 
     if (match) {
-      // Bind numeric API id so future syncs use the fast path
+      // Bind numeric API id so future syncs use the fast path.
       await this.db.match.update({ where: { id: match.id }, data: { externalId: ext.externalId } });
     }
 
@@ -79,23 +78,53 @@ export class SyncService {
           newStatus === MatchStatus.FINISHED && ext.homeScore != null && ext.awayScore != null
             ? determineWinner(ext.homeScore, ext.awayScore)
             : null;
+        const nextStadium = ext.stadium || match.stadium;
+        const nextCity = ext.city || match.city;
+        const nextCountry = ext.country || match.country;
 
-        const wasAlreadyFinished = !!match.winner;
+        const wasPreviouslyFinished =
+          match.status === MatchStatus.FINISHED &&
+          match.winner !== null &&
+          match.groupId !== null;
+        const resultChanged =
+          match.status !== newStatus ||
+          match.homeScore !== ext.homeScore ||
+          match.awayScore !== ext.awayScore ||
+          match.winner !== winner ||
+          match.matchDate.getTime() !== ext.matchDate.getTime() ||
+          match.stadium !== nextStadium ||
+          match.city !== nextCity ||
+          match.country !== nextCountry;
 
         await this.db.match.update({
           where: { id: match.id },
-          data: { status: newStatus, homeScore: ext.homeScore, awayScore: ext.awayScore, winner },
+          data: {
+            matchDate: ext.matchDate,
+            stadium: nextStadium,
+            city: nextCity,
+            country: nextCountry,
+            status: newStatus,
+            homeScore: ext.homeScore,
+            awayScore: ext.awayScore,
+            winner,
+          },
         });
         result.updated++;
 
-        if (newStatus === MatchStatus.FINISHED && winner && !wasAlreadyFinished) {
+        if (wasPreviouslyFinished && (newStatus !== MatchStatus.FINISHED || winner === null)) {
+          await clearMatchPredictionPoints(this.db, match.id);
+          continue;
+        }
+
+        if (newStatus === MatchStatus.FINISHED && winner && match.groupId && resultChanged) {
           await this.calculatePoints(match.id);
           result.pointsCalculated++;
-          // Fire-and-forget: push result to subscribed users
-          sendMatchResultPush(this.db, match.id).catch(() => {});
+          if (!wasPreviouslyFinished) {
+            sendMatchResultPush(this.db, match.id).catch(() => {});
+          }
         }
-      } catch (e) {
-        result.errors.push(String(e));
+      } catch (error) {
+        result.errors.push(String(error));
       }
     }
 
@@ -103,39 +132,7 @@ export class SyncService {
   }
 
   async calculatePoints(matchId: string): Promise<void> {
-    const match = await this.db.match.findUniqueOrThrow({ where: { id: matchId } });
-    if (!match.winner || !match.groupId) return;
-
-    const predictions = await this.db.prediction.findMany({ where: { matchId } });
-
-    await this.db.$transaction(async (tx) => {
-      for (const pred of predictions) {
-        const correct = pred.prediction === match.winner;
-        await tx.predictionPoints.upsert({
-          where: { predictionId: pred.id },
-          create: {
-            userId: pred.userId,
-            matchId,
-            predictionId: pred.id,
-            points: correct ? 1 : 0,
-            correct,
-          },
-          update: { points: correct ? 1 : 0, correct },
-        });
-      }
-
-      const affectedUserIds = [...new Set(predictions.map((p) => p.userId))];
-      for (const userId of affectedUserIds) {
-        const agg = await tx.predictionPoints.aggregate({
-          where: { userId },
-          _sum: { points: true },
-        });
-        await tx.user.update({
-          where: { id: userId },
-          data: { totalPoints: agg._sum.points ?? 0 },
-        });
-      }
-    });
+    await calculateMatchPredictionPoints(this.db, matchId);
   }
 
   async recalculateAllPoints(): Promise<void> {

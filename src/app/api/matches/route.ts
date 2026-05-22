@@ -16,6 +16,7 @@ export async function GET(request: Request) {
 
   const matches = await prisma.match.findMany({
     where: {
+      groupId: { not: null },
       ...(group ? { group: { name: group } } : {}),
       ...(round ? { round } : {}),
       ...(status ? { status } : {}),

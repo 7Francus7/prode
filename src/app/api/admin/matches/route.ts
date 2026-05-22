@@ -11,13 +11,12 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status") as MatchStatus | null;
-  const round = searchParams.get("round");
   const group = searchParams.get("group");
 
   const matches = await prisma.match.findMany({
     where: {
+      groupId: { not: null },
       ...(status ? { status } : {}),
-      ...(round ? { round } : {}),
       ...(group ? { group: { name: group } } : {}),
     },
     include: { homeTeam: true, awayTeam: true, group: true },

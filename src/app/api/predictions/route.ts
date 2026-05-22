@@ -3,6 +3,14 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isMatchLocked, isGlobalPredictionLocked } from "@/lib/utils";
 import { PredictionResult } from "@prisma/client";
+import { z } from "zod";
+
+const createPredictionSchema = z.object({
+  matchId: z.string().min(1, "Partido inválido"),
+  prediction: z.nativeEnum(PredictionResult, {
+    error: "Predicción inválida",
+  }),
+});
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -20,11 +28,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Las predicciones han cerrado" }, { status: 403 });
   }
 
-  const { matchId, prediction } = await request.json();
-
-  if (!Object.values(PredictionResult).includes(prediction)) {
-    return NextResponse.json({ error: "Predicción inválida" }, { status: 400 });
+  const parsed = createPredictionSchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Predicción inválida" }, { status: 400 });
   }
+
+  const { matchId, prediction } = parsed.data;
 
   const match = await prisma.match.findUnique({ where: { id: matchId } });
   if (!match) {

@@ -3,16 +3,22 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { SyncService } from "@/services/syncService";
 import { createFootballApiProvider } from "@/services/footballApi";
+import { env } from "@/lib/env";
 
 export async function POST(request: Request) {
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (authHeader !== `Bearer ${env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const service = new SyncService(createFootballApiProvider(), prisma);
-  const result = await service.syncTodayMatches();
-  return NextResponse.json(result);
+  try {
+    const service = new SyncService(createFootballApiProvider(), prisma);
+    const result = await service.syncTodayMatches();
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("[sync:cron] error:", error);
+    return NextResponse.json({ error: "Sync failed" }, { status: 500 });
+  }
 }
 
 export async function GET(request: Request) {
@@ -24,7 +30,12 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const full = searchParams.get("full") === "true";
 
-  const service = new SyncService(createFootballApiProvider(), prisma);
-  const result = full ? await service.syncAllMatches() : await service.syncLiveMatches();
-  return NextResponse.json(result);
+  try {
+    const service = new SyncService(createFootballApiProvider(), prisma);
+    const result = full ? await service.syncAllMatches() : await service.syncLiveMatches();
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("[sync:admin] error:", error);
+    return NextResponse.json({ error: "No se pudo sincronizar" }, { status: 500 });
+  }
 }

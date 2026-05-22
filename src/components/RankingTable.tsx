@@ -35,7 +35,7 @@ export default function RankingTable({
       {/* Rows */}
       <div className="divide-y divide-brand-border">
         {entries.map((entry, i) => {
-          const rank = startFrom + i;
+          const rank = entry.rank ?? startFrom + i;
           const isMe = entry.id === currentUserId;
           return (
             <div

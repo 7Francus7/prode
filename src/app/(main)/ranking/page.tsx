@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { buildRankingEntries } from "@/lib/ranking";
 import Podium from "@/components/Podium";
 import RankingTable from "@/components/RankingTable";
 import MyPositionBanner from "@/components/MyPositionBanner";
@@ -25,19 +26,7 @@ async function getRanking(): Promise<RankingEntry[]> {
     orderBy: [{ totalPoints: "desc" }, { name: "asc" }],
   });
 
-  return users.map((u, i) => ({
-    rank: i + 1,
-    id: u.id,
-    name: u.name,
-    image: u.image,
-    totalPoints: u.totalPoints,
-    correctPredictions: u._count.predictionPoints,
-    totalPredictions: u._count.predictions,
-    accuracy:
-      u._count.predictions > 0
-        ? Math.round((u._count.predictionPoints / u._count.predictions) * 100)
-        : null,
-  }));
+  return buildRankingEntries(users);
 }
 
 export default async function RankingPage() {

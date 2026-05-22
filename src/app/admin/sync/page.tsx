@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 import type { SyncResult } from "@/types";
 
 type RecalcResult = { ok: boolean; usersUpdated: number };
-type PushTestResult = { ok?: boolean; error?: string };
-type BroadcastResult = { sent: number; failed: number; total: number };
+type PushTestResult = { ok?: boolean; sent?: number; error?: string };
+type BroadcastResult = { sent: number; failed: number; total: number; error?: string };
 
 export default function AdminSyncPage() {
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
@@ -22,9 +22,13 @@ export default function AdminSyncPage() {
     setSyncResult(null);
     setRecalcResult(null);
     try {
-      const res = await fetch(`/api/sync${full ? "?full=true" : ""}`, { method: "GET" });
-      if (res.status === 403) { setError("Sin permisos"); return; }
-      setSyncResult(await res.json());
+      const response = await fetch(`/api/sync${full ? "?full=true" : ""}`, { method: "GET" });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data || typeof data !== "object" || !Array.isArray((data as SyncResult).errors)) {
+        setError((data as { error?: string } | null)?.error ?? "No se pudo sincronizar");
+        return;
+      }
+      setSyncResult(data as SyncResult);
     } catch {
       setError("Error de red");
     } finally {
@@ -38,9 +42,13 @@ export default function AdminSyncPage() {
     setSyncResult(null);
     setRecalcResult(null);
     try {
-      const res = await fetch("/api/admin/recalculate", { method: "POST" });
-      if (res.status === 403) { setError("Sin permisos"); return; }
-      setRecalcResult(await res.json());
+      const response = await fetch("/api/admin/recalculate", { method: "POST" });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data || typeof data !== "object") {
+        setError((data as { error?: string } | null)?.error ?? "No se pudo recalcular");
+        return;
+      }
+      setRecalcResult(data as RecalcResult);
     } catch {
       setError("Error de red");
     } finally {
@@ -54,8 +62,13 @@ export default function AdminSyncPage() {
     setPushTestResult(null);
     setBroadcastResult(null);
     try {
-      const res = await fetch("/api/admin/push/test", { method: "POST" });
-      setPushTestResult(await res.json());
+      const response = await fetch("/api/admin/push/test", { method: "POST" });
+      const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        setPushTestResult({ error: (data as { error?: string } | null)?.error ?? "No se pudo enviar el push de prueba" });
+        return;
+      }
+      setPushTestResult(data as PushTestResult);
     } catch {
       setError("Error de red");
     } finally {
@@ -69,12 +82,17 @@ export default function AdminSyncPage() {
     setPushTestResult(null);
     setBroadcastResult(null);
     try {
-      const res = await fetch("/api/admin/push/broadcast", {
+      const response = await fetch("/api/admin/push/broadcast", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: "Prode 2026", message: "Recordatorio del admin.", url: "/" }),
       });
-      setBroadcastResult(await res.json());
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data || typeof data !== "object") {
+        setError((data as { error?: string } | null)?.error ?? "No se pudo enviar el broadcast");
+        return;
+      }
+      setBroadcastResult(data as BroadcastResult);
     } catch {
       setError("Error de red");
     } finally {
@@ -91,7 +109,6 @@ export default function AdminSyncPage() {
         <h1 className="text-[22px] font-black text-white tracking-tight leading-none">Sync</h1>
       </div>
 
-      {/* Sync section */}
       <div className="space-y-2.5">
         <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.14em]">
           Sincronizar resultados
@@ -118,7 +135,6 @@ export default function AdminSyncPage() {
         </button>
       </div>
 
-      {/* Recalculate section */}
       <div className="space-y-2.5">
         <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.14em]">
           Puntos
@@ -138,7 +154,6 @@ export default function AdminSyncPage() {
         </p>
       </div>
 
-      {/* Push section */}
       <div className="space-y-2.5">
         <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.14em]">
           Push Notifications
@@ -151,7 +166,7 @@ export default function AdminSyncPage() {
             "bg-brand-card border-brand-border text-white hover:bg-brand-card-2 disabled:opacity-50"
           )}
         >
-          {loading === "pushtest" ? "Enviando..." : "Enviar push de prueba (a mí)"}
+          {loading === "pushtest" ? "Enviando..." : "Enviar push de prueba (a mis dispositivos)"}
         </button>
         <button
           onClick={runBroadcast}
@@ -190,8 +205,8 @@ export default function AdminSyncPage() {
           {syncResult.errors.length > 0 && (
             <div className="pt-2 border-t border-brand-border space-y-1">
               <p className="text-[11px] text-red-400 font-semibold">Errores ({syncResult.errors.length})</p>
-              {syncResult.errors.map((e, i) => (
-                <p key={i} className="text-[11px] text-red-300 pl-2">{e}</p>
+              {syncResult.errors.map((entry, index) => (
+                <p key={index} className="text-[11px] text-red-300 pl-2">{entry}</p>
               ))}
             </div>
           )}
@@ -214,7 +229,9 @@ export default function AdminSyncPage() {
             : "border-red-800/30 bg-red-900/10"
         )}>
           <p className={cn("text-sm font-bold", pushTestResult.ok ? "text-emerald-400" : "text-red-400")}>
-            {pushTestResult.ok ? "Push enviado correctamente" : (pushTestResult.error ?? "Error desconocido")}
+            {pushTestResult.ok
+              ? `Push enviado correctamente${pushTestResult.sent ? ` (${pushTestResult.sent})` : ""}`
+              : (pushTestResult.error ?? "Error desconocido")}
           </p>
         </div>
       )}

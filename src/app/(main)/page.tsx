@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getSharedRankByPoints } from "@/lib/ranking";
 import { isMatchLocked, isGlobalPredictionLocked } from "@/lib/utils";
 import MatchCard from "@/components/MatchCard";
 import StatsCards from "@/components/StatsCards";
@@ -16,7 +17,7 @@ async function getHomeData(userId: string) {
   const [liveMatches, nextMatches, ranking, userRecord, correctCount, totalPredictions, totalUsers] =
     await Promise.all([
       prisma.match.findMany({
-        where: { status: "LIVE" },
+        where: { status: "LIVE", groupId: { not: null } },
         include: {
           homeTeam: true,
           awayTeam: true,
@@ -26,7 +27,7 @@ async function getHomeData(userId: string) {
         orderBy: { matchDate: "asc" },
       }),
       prisma.match.findMany({
-        where: { status: "SCHEDULED" },
+        where: { status: "SCHEDULED", groupId: { not: null } },
         include: {
           homeTeam: true,
           awayTeam: true,
@@ -51,8 +52,10 @@ async function getHomeData(userId: string) {
   const totalPoints = userRecord?.totalPoints ?? 0;
 
   // Count users with strictly more points to get 1-based rank (ties share the same rank)
-  const userRank = totalPoints > 0
-    ? (await prisma.user.count({ where: { totalPoints: { gt: totalPoints } } })) + 1
+  const userRank = userRecord
+    ? (await prisma.user.count({
+        where: { isAdmin: false, totalPoints: { gt: totalPoints } },
+      })) + 1
     : 0;
 
   return { liveMatches, nextMatches, ranking, totalPoints, correctCount, userRank, totalPredictions, totalUsers };
@@ -92,6 +95,7 @@ export default async function HomePage() {
   }
   const { liveMatches, nextMatches, ranking, totalPoints, correctCount, userRank, totalPredictions, totalUsers } = homeData;
   const globalLocked = isGlobalPredictionLocked();
+  const rankingDisplayRanks = ranking.map((_, index) => getSharedRankByPoints(ranking, index));
 
   const inTopVisible = ranking.some((u) => u.id === userId);
   const myEntry: RankingEntry | null = userRank > 0 ? {
@@ -124,7 +128,7 @@ export default async function HomePage() {
       {/* Global lock countdown */}
       <GlobalLockCountdown />
 
-      {/* Push notifications — only for paid users */}
+      {/* Push notifications - only for paid users */}
       {session.user.isPaid && <PushNotificationCard />}
 
       {/* Stats */}
@@ -200,7 +204,7 @@ export default async function HomePage() {
         </svg>
       </Link>
 
-      {/* My position banner — only when not visible in top ranking */}
+      {/* My position banner - only when not visible in top ranking */}
       {myEntry && !inTopVisible && (
         <MyPositionBanner entry={myEntry} total={totalUsers} />
       )}
@@ -229,6 +233,7 @@ export default async function HomePage() {
           <div className="rounded-2xl border border-brand-border overflow-hidden bg-brand-card divide-y divide-brand-border">
             {ranking.map((u, i) => {
               const isMe = u.id === userId;
+              const displayRank = rankingDisplayRanks[i];
               const medals = ["🥇", "🥈", "🥉"];
               return (
                 <div
@@ -236,7 +241,7 @@ export default async function HomePage() {
                   className={`flex items-center gap-3 px-4 py-3 ${isMe ? "bg-blue-600/8 border-l-2 border-l-blue-500" : ""}`}
                 >
                   <span className="text-sm w-5 text-center">
-                    {i < 3 ? medals[i] : <span className="text-slate-600 font-mono text-xs">{i + 1}</span>}
+                    {displayRank <= 3 ? medals[displayRank - 1] : <span className="text-slate-600 font-mono text-xs">{displayRank}</span>}
                   </span>
                   <div className="w-7 h-7 rounded-full bg-brand-card-2 border border-brand-border flex items-center justify-center text-[10px] font-bold text-slate-500 flex-shrink-0">
                     {getInitials(u.name)}

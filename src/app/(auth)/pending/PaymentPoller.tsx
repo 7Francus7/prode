@@ -12,7 +12,13 @@ export function PaymentPoller() {
     const tick = () => {
       setChecking(true);
       router.refresh();
-      setLastCheck(new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+      setLastCheck(
+        new Date().toLocaleTimeString("es-AR", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        })
+      );
       setTimeout(() => setChecking(false), 1200);
     };
 

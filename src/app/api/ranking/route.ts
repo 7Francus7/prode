@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import type { RankingEntry } from "@/types";
+import { buildRankingEntries } from "@/lib/ranking";
 
 export const dynamic = "force-dynamic";
 
@@ -24,21 +24,7 @@ export async function GET() {
       take: 200,
     });
 
-    const ranking: RankingEntry[] = users.map((u, i) => ({
-      rank: i + 1,
-      id: u.id,
-      name: u.name,
-      image: u.image,
-      totalPoints: u.totalPoints,
-      correctPredictions: u._count.predictionPoints,
-      totalPredictions: u._count.predictions,
-      accuracy:
-        u._count.predictions > 0
-          ? Math.round((u._count.predictionPoints / u._count.predictions) * 100)
-          : null,
-    }));
-
-    return NextResponse.json(ranking);
+    return NextResponse.json(buildRankingEntries(users));
   } catch (err) {
     console.error("[ranking] error:", err);
     return NextResponse.json({ error: "Error interno" }, { status: 500 });

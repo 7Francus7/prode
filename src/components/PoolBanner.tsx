@@ -22,7 +22,6 @@ export async function PoolBanner({ variant = "home" }: PoolBannerProps) {
         boxShadow: "0 0 48px -12px rgba(202,138,4,0.12), inset 0 1px 0 rgba(255,255,255,0.03)",
       }}
     >
-      {/* Decorative glow */}
       <div
         className="absolute top-0 right-0 w-32 h-32 pointer-events-none"
         style={{
@@ -32,7 +31,6 @@ export async function PoolBanner({ variant = "home" }: PoolBannerProps) {
       />
 
       <div className="relative flex items-center gap-4">
-        {/* Trophy icon */}
         <div
           className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
           style={{
@@ -59,7 +57,6 @@ export async function PoolBanner({ variant = "home" }: PoolBannerProps) {
           </svg>
         </div>
 
-        {/* Content */}
         <div className="flex-1 min-w-0">
           <p
             className="text-[9px] font-bold uppercase tracking-[0.2em] mb-0.5"
@@ -79,7 +76,6 @@ export async function PoolBanner({ variant = "home" }: PoolBannerProps) {
           </p>
         </div>
 
-        {/* Live pulse */}
         <div className="flex flex-col items-center gap-1 shrink-0">
           <span className="relative flex h-2 w-2">
             <span

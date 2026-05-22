@@ -8,6 +8,8 @@
     "start": "next start",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
+    "db:validate-seed": "tsx prisma/validate-seed.ts",
+    "qa:smoke": "tsx scripts/qa-smoke.ts",
     "db:studio": "prisma studio",
     "db:generate": "prisma generate"
   },
@@ -32,14 +34,13 @@
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3",
-    "web-push": "^3.6.7"
+    "web-push": "^3.6.7",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/web-push": "^3.6.4",
+    "dotenv": "^17.4.2",
     "tsx": "^4.22.1"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
   }
 }
