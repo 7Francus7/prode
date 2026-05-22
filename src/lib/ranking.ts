@@ -10,8 +10,17 @@ type RankingUser = {
   name: string | null;
   image: string | null;
   totalPoints: number;
+  predictionPoints: Array<{ id: string }>;
   _count: RankingUserCounts;
 };
+
+export function calculateAccuracy(
+  correctPredictions: number,
+  resolvedPredictions: number
+): number | null {
+  if (resolvedPredictions <= 0) return null;
+  return Math.round((correctPredictions / resolvedPredictions) * 100);
+}
 
 export function getSharedRankByPoints(
   sortedItems: Array<{ totalPoints: number }>,
@@ -29,17 +38,18 @@ export function getSharedRankByPoints(
 }
 
 export function buildRankingEntries(users: RankingUser[]): RankingEntry[] {
-  return users.map((user, index) => ({
-    rank: getSharedRankByPoints(users, index),
-    id: user.id,
-    name: user.name,
-    image: user.image,
-    totalPoints: user.totalPoints,
-    correctPredictions: user._count.predictionPoints,
-    totalPredictions: user._count.predictions,
-    accuracy:
-      user._count.predictions > 0
-        ? Math.round((user._count.predictionPoints / user._count.predictions) * 100)
-        : null,
-  }));
+  return users.map((user, index) => {
+    const correctPredictions = user.predictionPoints.length;
+
+    return {
+      rank: getSharedRankByPoints(users, index),
+      id: user.id,
+      name: user.name,
+      image: user.image,
+      totalPoints: user.totalPoints,
+      correctPredictions,
+      totalPredictions: user._count.predictions,
+      accuracy: calculateAccuracy(correctPredictions, user._count.predictionPoints),
+    };
+  });
 }

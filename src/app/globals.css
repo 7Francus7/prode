@@ -65,11 +65,20 @@
   }
 
   body {
-    background: linear-gradient(160deg, #0a0f20 0%, #080b14 35%, #080914 100%);
+    background:
+      radial-gradient(circle at top, rgba(214, 158, 46, 0.08), transparent 26%),
+      radial-gradient(circle at 85% 20%, rgba(120, 119, 198, 0.08), transparent 22%),
+      linear-gradient(165deg, #0c111b 0%, #090d15 40%, #06080f 100%);
     color: #f1f5f9;
     -webkit-font-smoothing: antialiased;
-    font-family: Inter, system-ui, sans-serif;
+    font-family: var(--font-body), system-ui, sans-serif;
+    letter-spacing: -0.015em;
     overscroll-behavior-y: none;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display), system-ui, sans-serif;
+    letter-spacing: -0.04em;
   }
 
   a, button, [role="button"] {

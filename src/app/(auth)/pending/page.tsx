@@ -12,28 +12,20 @@ const BANK = env.PAYMENT_BANK;
 const AMOUNT = env.INSCRIPTION_AMOUNT?.toString() ?? "???";
 
 const GLASS: React.CSSProperties = {
-  background: "rgba(9, 14, 26, 0.78)",
-  backdropFilter: "blur(24px) saturate(1.6)",
-  WebkitBackdropFilter: "blur(24px) saturate(1.6)",
-  border: "1px solid rgba(255,255,255,0.08)",
+  background: "rgba(10, 14, 22, 0.82)",
+  backdropFilter: "blur(24px) saturate(1.5)",
+  WebkitBackdropFilter: "blur(24px) saturate(1.5)",
+  border: "1px solid rgba(255,255,255,0.07)",
   boxShadow:
-    "inset 0 0 0 1px rgba(255,255,255,0.025), " +
-    "0 24px 56px -8px rgba(0,0,0,0.65), " +
-    "0 0 80px -24px rgba(37,99,235,0.1)",
+    "inset 0 1px 0 rgba(255,255,255,0.035), " +
+    "0 28px 60px -20px rgba(0,0,0,0.72)",
 };
 
 function DataRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div
-      className="flex items-center justify-between gap-4 py-3"
-      style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
-    >
-      <span className="text-xs font-medium" style={{ color: "rgba(148,163,184,0.5)" }}>
-        {label}
-      </span>
-      <span
-        className={`text-sm font-semibold text-white text-right ${mono ? "font-mono tracking-wider" : ""}`}
-      >
+    <div className="flex items-center justify-between gap-4 border-b border-white/6 py-3">
+      <span className="text-xs font-medium text-slate-500">{label}</span>
+      <span className={`text-right text-sm font-semibold text-white ${mono ? "font-mono tracking-wider" : ""}`}>
         {value}
       </span>
     </div>
@@ -43,7 +35,6 @@ function DataRow({ label, value, mono }: { label: string; value: string; mono?: 
 export default async function PendingPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
-
   if (session.user.isPaid) redirect("/");
 
   const userName = session.user.name ?? "Participante";
@@ -59,57 +50,60 @@ export default async function PendingPage() {
       <GlobalLockCountdown variant="pending" />
 
       <div
-        className="rounded-2xl px-5 py-4 flex items-center gap-4"
+        className="flex items-center gap-4 rounded-[1.6rem] px-5 py-4"
         style={{
-          background: "rgba(202,138,4,0.08)",
-          border: "1px solid rgba(202,138,4,0.18)",
+          background: "rgba(214,164,74,0.1)",
+          border: "1px solid rgba(214,164,74,0.16)",
         }}
       >
         <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: "rgba(202,138,4,0.15)" }}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+          style={{ background: "rgba(214,164,74,0.16)" }}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(250,204,21,0.85)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(252,211,77,0.92)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10" />
             <path d="M12 6v6l4 2" />
           </svg>
         </div>
         <div>
-          <p className="text-sm font-bold" style={{ color: "rgba(250,204,21,0.9)" }}>
-            Pago pendiente de confirmación
-          </p>
-          <p className="text-xs mt-0.5" style={{ color: "rgba(250,204,21,0.5)" }}>
-            Tu acceso se activa cuando confirmemos tu transferencia
+          <p className="text-sm font-bold text-amber-100">Pago pendiente de confirmacion</p>
+          <p className="mt-0.5 text-xs text-amber-200/60">
+            Tu acceso se activa cuando confirmemos la transferencia.
           </p>
         </div>
       </div>
 
-      <div className="rounded-2xl p-6 space-y-1" style={GLASS}>
-        <div className="mb-4">
-          <h2 className="text-[15px] font-bold text-white tracking-tight">
+      <div className="rounded-[1.75rem] p-6" style={GLASS}>
+        <div className="mb-5">
+          <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-slate-500">
+            Instrucciones
+          </p>
+          <h2 className="font-display text-[1.6rem] font-bold tracking-[-0.05em] text-white">
             Datos de pago
           </h2>
-          <p className="text-xs mt-1" style={{ color: "rgba(148,163,184,0.38)" }}>
-            Realizá la transferencia con los datos a continuación
+          <p className="mt-1 text-sm text-slate-400">
+            Hace la transferencia y te habilitamos para jugar apenas la veamos.
           </p>
         </div>
 
-        <DataRow label="Monto" value={`$${AMOUNT} ARS`} />
-        <DataRow label="Alias" value={ALIAS} mono />
-        <DataRow label="CBU" value={CBU} mono />
-        <DataRow label="Titular" value={OWNER} />
-        <DataRow label="Banco" value={BANK} />
+        <div className="space-y-1">
+          <DataRow label="Monto" value={`$${AMOUNT} ARS`} />
+          <DataRow label="Alias" value={ALIAS} mono />
+          <DataRow label="CBU" value={CBU} mono />
+          <DataRow label="Titular" value={OWNER} />
+          <DataRow label="Banco" value={BANK} />
+        </div>
 
         <div
-          className="mt-4 rounded-xl px-4 py-3.5"
+          className="mt-5 rounded-2xl px-4 py-4"
           style={{
-            background: "rgba(37,99,235,0.08)",
-            border: "1px solid rgba(37,99,235,0.15)",
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.06)",
           }}
         >
-          <p className="text-xs leading-relaxed" style={{ color: "rgba(148,163,184,0.65)" }}>
-            En el concepto escribí tu nombre:{" "}
-            <span className="font-semibold text-white">{userName}</span>
+          <p className="text-xs leading-relaxed text-slate-400">
+            En el concepto escribe tu nombre:
+            <span className="font-semibold text-white"> {userName}</span>
             {" · Prode 2026"}
           </p>
         </div>
@@ -120,10 +114,9 @@ export default async function PendingPage() {
       <form action={handleSignOut}>
         <button
           type="submit"
-          className="w-full text-xs font-medium py-2.5 rounded-xl transition-colors"
-          style={{ color: "rgba(100,116,139,0.6)", background: "transparent" }}
+          className="w-full rounded-[1.2rem] border border-white/8 py-3 text-sm font-semibold text-slate-400 transition-colors hover:text-white"
         >
-          Cerrar sesión
+          Cerrar sesion
         </button>
       </form>
     </div>

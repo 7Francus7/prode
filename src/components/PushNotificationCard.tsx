@@ -27,13 +27,14 @@ export default function PushNotificationCard() {
       return;
     }
     const perm = Notification.permission;
-    if (perm === "denied") { setState("denied"); return; }
+    if (perm === "denied") {
+      setState("denied");
+      return;
+    }
 
-    navigator.serviceWorker.ready.then((reg) =>
-      reg.pushManager.getSubscription().then((sub) => {
-        setState(sub ? "granted" : "default");
-      })
-    ).catch(() => setState("default"));
+    navigator.serviceWorker.ready
+      .then((reg) => reg.pushManager.getSubscription().then((sub) => setState(sub ? "granted" : "default")))
+      .catch(() => setState("default"));
   }, []);
 
   async function subscribe() {
@@ -41,7 +42,10 @@ export default function PushNotificationCard() {
     setErrorMsg(null);
     try {
       const perm = await Notification.requestPermission();
-      if (perm !== "granted") { setState("denied"); return; }
+      if (perm !== "granted") {
+        setState("denied");
+        return;
+      }
 
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.subscribe({
@@ -63,7 +67,7 @@ export default function PushNotificationCard() {
       if (res.ok) {
         setState("granted");
       } else {
-        const data = await res.json().catch(() => ({})) as { error?: string };
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
         setErrorMsg(data.error ?? "No se pudo guardar la suscripción.");
       }
     } catch {
@@ -99,16 +103,20 @@ export default function PushNotificationCard() {
 
   if (state === "denied") {
     return (
-      <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-brand-border bg-brand-card">
-        <div className="w-8 h-8 rounded-xl bg-slate-800/50 border border-brand-border flex items-center justify-center flex-shrink-0">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-600">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
+      <div
+        className="flex items-center gap-3 rounded-[1.6rem] border px-4 py-4"
+        style={{ background: "rgba(255,255,255,0.03)", borderColor: "rgba(255,255,255,0.06)" }}
+      >
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/6 bg-white/5">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             <line x1="2" y1="2" x2="22" y2="22" />
           </svg>
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[12px] font-bold text-slate-500">Notificaciones bloqueadas</p>
-          <p className="text-[10px] text-slate-700 mt-0.5">Activalas desde la configuración del navegador</p>
+        <div className="min-w-0 flex-1">
+          <p className="text-[12px] font-bold text-white">Notificaciones bloqueadas</p>
+          <p className="mt-0.5 text-[10px] text-slate-400">Activálas desde la configuración del navegador</p>
         </div>
       </div>
     );
@@ -116,20 +124,27 @@ export default function PushNotificationCard() {
 
   if (state === "granted") {
     return (
-      <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-emerald-800/30 bg-emerald-900/8">
-        <div className="w-8 h-8 rounded-xl bg-emerald-600/15 border border-emerald-700/20 flex items-center justify-center flex-shrink-0">
+      <div
+        className="flex items-center gap-3 rounded-[1.6rem] border px-4 py-4"
+        style={{
+          background: "linear-gradient(180deg, rgba(10,28,24,0.9) 0%, rgba(7,16,16,0.92) 100%)",
+          borderColor: "rgba(16,185,129,0.12)",
+        }}
+      >
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-emerald-500/15 bg-emerald-500/10">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[12px] font-bold text-emerald-400">Notificaciones activas</p>
-          <p className="text-[10px] text-slate-600 mt-0.5">Te avisamos cuando termine cada partido</p>
+        <div className="min-w-0 flex-1">
+          <p className="text-[12px] font-bold text-emerald-300">Notificaciones activas</p>
+          <p className="mt-0.5 text-[10px] text-slate-400">Te avisamos cuando termine cada partido</p>
         </div>
         <button
           onClick={unsubscribe}
           disabled={actionLoading}
-          className="text-[10px] font-semibold text-slate-600 hover:text-slate-400 transition-colors disabled:opacity-40 flex-shrink-0"
+          className="flex-shrink-0 text-[10px] font-semibold text-slate-400 transition-colors hover:text-white disabled:opacity-40"
         >
           {actionLoading ? "..." : "Desactivar"}
         </button>
@@ -137,27 +152,28 @@ export default function PushNotificationCard() {
     );
   }
 
-  // state === "default"
   return (
-    <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-brand-border bg-brand-card">
-      <div className="w-8 h-8 rounded-xl bg-blue-600/15 border border-blue-600/20 flex items-center justify-center flex-shrink-0">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    <div
+      className="flex items-center gap-3 rounded-[1.6rem] border px-4 py-4"
+      style={{ background: "rgba(255,255,255,0.03)", borderColor: "rgba(255,255,255,0.06)" }}
+    >
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-amber-500/15 bg-amber-500/10">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
         </svg>
       </div>
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <p className="text-[12px] font-bold text-white">Activar recordatorios</p>
-        <p className="text-[10px] text-slate-600 mt-0.5">Resultados y puntos al instante</p>
-        {errorMsg && (
-          <p className="text-[10px] text-red-400 mt-1">{errorMsg}</p>
-        )}
+        <p className="mt-0.5 text-[10px] text-slate-400">Resultados y puntos al instante</p>
+        {errorMsg && <p className="mt-1 text-[10px] text-red-400">{errorMsg}</p>}
       </div>
       <button
         onClick={subscribe}
         disabled={actionLoading}
         className={cn(
-          "flex-shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-colors",
-          "bg-blue-600/15 border-blue-600/25 text-blue-400 hover:bg-blue-600/25 disabled:opacity-40"
+          "flex-shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-bold transition-colors",
+          "border-amber-500/20 bg-amber-500/10 text-amber-200 hover:bg-amber-500/15 disabled:opacity-40"
         )}
       >
         {actionLoading ? "..." : "Activar"}

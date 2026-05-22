@@ -31,7 +31,7 @@ function formatParts(ms: number) {
 function Unit({ value, label }: { value: string; label: string }) {
   return (
     <div className="flex flex-col items-center gap-0.5">
-      <span className="text-[22px] font-black tabular-nums leading-none tracking-tight text-white">
+      <span className="font-display text-[24px] font-bold tabular-nums leading-none tracking-[-0.05em] text-white">
         {value}
       </span>
       <span
@@ -88,9 +88,9 @@ export function GlobalLockCountdown({ variant = "home" }: Props) {
   if (phase === "locked") {
     return (
       <div
-        className="rounded-2xl px-4 py-3.5 flex items-center gap-3"
+        className="flex items-center gap-3 rounded-[1.6rem] px-4 py-4"
         style={{
-          background: "rgba(30,30,30,0.5)",
+          background: "linear-gradient(180deg, rgba(20,20,20,0.56) 0%, rgba(10,10,10,0.56) 100%)",
           border: "1px solid rgba(255,255,255,0.06)",
         }}
       >
@@ -162,8 +162,12 @@ export function GlobalLockCountdown({ variant = "home" }: Props) {
 
   return (
     <div
-      className={`rounded-2xl px-4 py-4 ${isUrgent ? "animate-urgent-blink" : ""}`}
-      style={{ background: bgColor, border: `1px solid ${borderColor}` }}
+      className={`rounded-[1.6rem] px-4 py-4 ${isUrgent ? "animate-urgent-blink" : ""}`}
+      style={{
+        background: `linear-gradient(180deg, ${bgColor} 0%, rgba(8,10,16,0.8) 100%)`,
+        border: `1px solid ${borderColor}`,
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)",
+      }}
     >
       <div className="flex items-center gap-2 mb-3">
         <svg
@@ -180,7 +184,7 @@ export function GlobalLockCountdown({ variant = "home" }: Props) {
           <path d="M12 6v6l4 2" />
         </svg>
         <span
-          className="text-[11px] font-semibold uppercase tracking-[0.1em]"
+          className="text-[11px] font-semibold uppercase tracking-[0.14em]"
           style={{ color: accentColor }}
         >
           {headline}

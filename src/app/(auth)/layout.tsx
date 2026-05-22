@@ -1,43 +1,38 @@
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className="relative flex flex-col items-center justify-center px-4 py-12 overflow-hidden"
+      className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden px-4 py-12"
       style={{
-        minHeight: "100dvh",
         background:
-          "radial-gradient(ellipse 110% 55% at 50% -5%, rgba(37,99,235,0.16) 0%, transparent 65%), " +
-          "radial-gradient(ellipse 55% 40% at 5% 95%, rgba(79,70,229,0.09) 0%, transparent 55%), " +
-          "#080c17",
+          "radial-gradient(circle at 50% -8%, rgba(214,164,74,0.14) 0%, transparent 32%), " +
+          "radial-gradient(circle at 8% 92%, rgba(148,163,184,0.08) 0%, transparent 24%), " +
+          "linear-gradient(180deg, #0d1119 0%, #090c13 48%, #06080d 100%)",
       }}
     >
-      {/* Subtle field grid */}
       <div
-        className="fixed inset-0 pointer-events-none"
+        className="pointer-events-none fixed inset-0"
         style={{
           zIndex: 0,
           backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.016) 1px, transparent 1px), " +
-            "linear-gradient(90deg, rgba(255,255,255,0.016) 1px, transparent 1px)",
-          backgroundSize: "52px 52px",
+            "linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), " +
+            "linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
           maskImage:
-            "radial-gradient(ellipse 85% 85% at 50% 45%, rgba(0,0,0,0.65) 0%, transparent 100%)",
+            "radial-gradient(ellipse 82% 82% at 50% 45%, rgba(0,0,0,0.8) 0%, transparent 100%)",
           WebkitMaskImage:
-            "radial-gradient(ellipse 85% 85% at 50% 45%, rgba(0,0,0,0.65) 0%, transparent 100%)",
+            "radial-gradient(ellipse 82% 82% at 50% 45%, rgba(0,0,0,0.8) 0%, transparent 100%)",
         }}
       />
 
       <div className="relative z-10 w-full max-w-sm">
-        {/* Logo */}
-        <div className="flex flex-col items-center mb-12">
+        <div className="mb-12 flex flex-col items-center">
           <div className="logo-glow mb-6">
             <div
-              className="w-[72px] h-[72px] rounded-[22px] flex items-center justify-center"
+              className="flex h-[76px] w-[76px] items-center justify-center rounded-[24px]"
               style={{
-                background: "linear-gradient(145deg, #4f95ff 0%, #2563eb 55%, #1e3faa 100%)",
+                background: "linear-gradient(145deg, #d6a44a 0%, #8f5c1f 100%)",
                 boxShadow:
-                  "0 8px 32px rgba(37,99,235,0.44), " +
-                  "inset 0 0 0 1px rgba(255,255,255,0.12), " +
-                  "inset 0 2px 0 rgba(255,255,255,0.1)",
+                  "0 12px 34px rgba(143,92,31,0.38), inset 0 1px 0 rgba(255,255,255,0.14)",
               }}
             >
               <svg
@@ -61,20 +56,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </div>
 
           <div className="text-center">
-            <h1
-              className="font-black uppercase leading-none text-white"
-              style={{ fontSize: "26px", letterSpacing: "0.06em" }}
-            >
-              Prode <span style={{ color: "#60a5fa" }}>2026</span>
+            <h1 className="font-display text-[2rem] font-bold tracking-[-0.05em] text-white">
+              Prode <span className="text-amber-200">2026</span>
             </h1>
-            <p
-              className="font-semibold uppercase mt-2"
-              style={{
-                fontSize: "10px",
-                letterSpacing: "0.18em",
-                color: "rgba(148,163,184,0.42)",
-              }}
-            >
+            <p className="mt-2 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-slate-500">
               Predicciones · Mundial FIFA
             </p>
           </div>

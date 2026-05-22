@@ -62,10 +62,10 @@ const NAV_ITEMS = [
 ];
 
 const NAVBAR_GLASS: React.CSSProperties = {
-  background: "rgba(8, 12, 22, 0.9)",
-  backdropFilter: "blur(20px) saturate(1.5)",
-  WebkitBackdropFilter: "blur(20px) saturate(1.5)",
-  borderColor: "rgba(255,255,255,0.07)",
+  background: "rgba(8, 11, 18, 0.9)",
+  backdropFilter: "blur(20px) saturate(1.35)",
+  WebkitBackdropFilter: "blur(20px) saturate(1.35)",
+  borderColor: "rgba(255,255,255,0.06)",
 };
 
 export default function Navbar() {
@@ -73,22 +73,21 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Desktop top bar */}
       <header
-        className="hidden sm:flex items-center justify-between px-6 py-3.5 border-b sticky top-0 z-50"
+        className="sticky top-0 z-50 hidden items-center justify-between border-b px-6 py-3.5 sm:flex"
         style={NAVBAR_GLASS}
       >
         <div className="flex items-center gap-3">
           <div
-            className="w-7 h-7 rounded-lg flex items-center justify-center"
+            className="flex h-8 w-8 items-center justify-center rounded-xl"
             style={{
-              background: "linear-gradient(145deg, #4f95ff 0%, #2563eb 100%)",
-              boxShadow: "0 2px 8px rgba(37,99,235,0.38)",
+              background: "linear-gradient(145deg, #d6a44a 0%, #8f5c1f 100%)",
+              boxShadow: "0 6px 18px rgba(143,92,31,0.28)",
             }}
           >
             <svg
-              width="14"
-              height="14"
+              width="15"
+              height="15"
               viewBox="0 0 24 24"
               fill="none"
               stroke="white"
@@ -104,12 +103,17 @@ export default function Navbar() {
               <path d="M18 2H6v7a6 6 0 0 0 12 0V2z" />
             </svg>
           </div>
-          <span className="font-black text-[13px] tracking-[0.08em] uppercase text-white/90">
-            Prode <span className="text-blue-400">2026</span>
-          </span>
+          <div>
+            <span className="font-display text-[1.05rem] font-bold tracking-[-0.04em] text-white">
+              Prode <span className="text-amber-200">2026</span>
+            </span>
+            <p className="text-[0.62rem] uppercase tracking-[0.18em] text-slate-500">
+              Mundial entre amigos
+            </p>
+          </div>
         </div>
 
-        <nav className="flex items-center gap-0.5">
+        <nav className="flex items-center gap-1">
           {NAV_ITEMS.map((item) => {
             const active = pathname === item.href;
             return (
@@ -117,16 +121,14 @@ export default function Navbar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-150",
-                  active
-                    ? "text-blue-400"
-                    : "text-slate-500 hover:text-white hover:bg-white/5"
+                  "flex items-center gap-2 rounded-full px-3.5 py-2 text-xs font-semibold transition-all duration-150",
+                  active ? "text-white" : "text-slate-500 hover:bg-white/5 hover:text-white"
                 )}
                 style={
                   active
                     ? {
-                        background: "rgba(59,130,246,0.1)",
-                        border: "1px solid rgba(59,130,246,0.18)",
+                        background: "rgba(214,164,74,0.12)",
+                        border: "1px solid rgba(214,164,74,0.18)",
                       }
                     : { border: "1px solid transparent" }
                 }
@@ -139,15 +141,14 @@ export default function Navbar() {
         </nav>
       </header>
 
-      {/* Mobile bottom bar */}
       <nav
-        className="sm:hidden fixed bottom-0 inset-x-0 z-50 border-t"
+        className="fixed inset-x-0 bottom-0 z-50 border-t sm:hidden"
         style={{
           ...NAVBAR_GLASS,
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
         }}
       >
-        <div className="flex">
+        <div className="grid grid-cols-5">
           {NAV_ITEMS.map((item) => {
             const active = pathname === item.href;
             return (
@@ -155,22 +156,22 @@ export default function Navbar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex-1 flex flex-col items-center justify-center pt-2.5 pb-2 gap-1 transition-colors relative",
-                  active ? "text-blue-400" : "text-slate-600"
+                  "relative flex min-h-[64px] flex-col items-center justify-center gap-1 pt-2 pb-2 transition-colors",
+                  active ? "text-amber-200" : "text-slate-600"
                 )}
-                style={active ? { background: "rgba(59,130,246,0.04)" } : {}}
+                style={active ? { background: "rgba(214,164,74,0.05)" } : {}}
               >
                 {active && (
                   <span
-                    className="absolute top-0 left-1/2 -translate-x-1/2 w-7 h-[2px] rounded-full"
+                    className="absolute top-0 left-1/2 h-[2px] w-8 -translate-x-1/2 rounded-full"
                     style={{
                       background:
-                        "linear-gradient(90deg, rgba(96,165,250,0) 0%, #60a5fa 50%, rgba(96,165,250,0) 100%)",
+                        "linear-gradient(90deg, rgba(214,164,74,0) 0%, rgba(214,164,74,1) 50%, rgba(214,164,74,0) 100%)",
                     }}
                   />
                 )}
                 <item.Icon />
-                <span className="text-[9px] font-bold tracking-wider uppercase">
+                <span className="text-[9px] font-bold uppercase tracking-[0.18em]">
                   {item.label}
                 </span>
               </Link>

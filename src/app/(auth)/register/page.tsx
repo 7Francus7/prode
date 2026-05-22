@@ -5,18 +5,17 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 const GLASS: React.CSSProperties = {
-  background: "rgba(9, 14, 26, 0.78)",
-  backdropFilter: "blur(24px) saturate(1.6)",
-  WebkitBackdropFilter: "blur(24px) saturate(1.6)",
-  border: "1px solid rgba(255,255,255,0.08)",
+  background: "rgba(10, 14, 22, 0.82)",
+  backdropFilter: "blur(24px) saturate(1.5)",
+  WebkitBackdropFilter: "blur(24px) saturate(1.5)",
+  border: "1px solid rgba(255,255,255,0.07)",
   boxShadow:
-    "inset 0 0 0 1px rgba(255,255,255,0.025), " +
-    "0 24px 56px -8px rgba(0,0,0,0.65), " +
-    "0 0 80px -24px rgba(37,99,235,0.1)",
+    "inset 0 1px 0 rgba(255,255,255,0.035), " +
+    "0 28px 60px -20px rgba(0,0,0,0.72)",
 };
 
 const INPUT: React.CSSProperties = {
-  background: "rgba(5, 9, 20, 0.9)",
+  background: "rgba(4, 7, 13, 0.9)",
   border: "1px solid rgba(255,255,255,0.07)",
 };
 
@@ -42,18 +41,16 @@ export default function RegisterPage() {
       if (!res.ok) {
         setError(data.error ?? "Error al registrarse");
       } else {
-        // Auto-login after register, then go to pending payment screen
         const { signIn } = await import("next-auth/react");
         const loginRes = await signIn("credentials", { email, password, redirect: false });
         if (loginRes?.error) {
-          // Registration succeeded but auto-login failed — send to login
           router.push("/login");
         } else {
           router.push("/pending");
         }
       }
     } catch {
-      setError("Error de red. Intentá de nuevo.");
+      setError("Error de red. Intenta de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -61,44 +58,32 @@ export default function RegisterPage() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl p-7 space-y-5" style={GLASS}>
-        <div>
-          <h2 className="text-[15px] font-bold text-white tracking-tight">
+      <div className="rounded-[1.75rem] p-7 space-y-5" style={GLASS}>
+        <div className="space-y-1.5">
+          <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-slate-500">
+            Primer paso
+          </p>
+          <h2 className="font-display text-[1.6rem] font-bold tracking-[-0.05em] text-white">
             Crear cuenta
           </h2>
-          <p className="text-xs mt-1" style={{ color: "rgba(148,163,184,0.38)" }}>
-            Completá tus datos para registrarte
+          <p className="text-sm text-slate-400">
+            Registra tu usuario y deja lista tu entrada al grupo.
           </p>
         </div>
 
         {error && (
           <div
-            className="flex items-center gap-3 rounded-xl px-4 py-3.5 relative overflow-hidden"
+            className="relative overflow-hidden rounded-2xl px-4 py-3.5"
             style={{
-              background: "rgba(127,29,29,0.16)",
+              background: "rgba(127,29,29,0.14)",
               border: "1px solid rgba(239,68,68,0.13)",
             }}
           >
             <div
-              className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r"
-              style={{ background: "rgba(239,68,68,0.38)" }}
+              className="absolute inset-y-0 left-0 w-[3px] rounded-r"
+              style={{ background: "rgba(239,68,68,0.4)" }}
             />
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="rgba(252,165,165,0.75)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 8v4M12 16h.01" />
-            </svg>
-            <p className="text-sm" style={{ color: "rgba(252,165,165,0.82)" }}>
-              {error}
-            </p>
+            <p className="pl-3 text-sm text-red-200">{error}</p>
           </div>
         )}
 
@@ -109,7 +94,7 @@ export default function RegisterPage() {
             autoCapitalize="words"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Tu nombre de usuario"
+            placeholder="Tu nombre"
             required
             className="input-premium w-full rounded-[14px] px-4 py-4 text-[15px] text-white"
             style={INPUT}
@@ -130,7 +115,7 @@ export default function RegisterPage() {
             autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Contraseña (mín. 6 caracteres)"
+            placeholder="Contrasena (min. 6 caracteres)"
             required
             minLength={6}
             className="input-premium w-full rounded-[14px] px-4 py-4 text-[15px] text-white"
@@ -140,22 +125,24 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="btn-premium w-full min-h-[52px] rounded-[14px] text-white font-bold text-[15px] mt-2"
+            className="w-full min-h-[52px] rounded-[14px] text-[15px] font-bold text-white"
+            style={{
+              background: "linear-gradient(135deg, #d6a44a 0%, #8f5c1f 100%)",
+              boxShadow: "0 16px 26px -18px rgba(214,164,74,0.8)",
+            }}
           >
-            <span className="relative z-10">
-              {loading ? "Creando cuenta..." : "Crear cuenta"}
-            </span>
+            {loading ? "Creando cuenta..." : "Crear cuenta"}
           </button>
         </form>
       </div>
 
-      <p className="text-center text-xs" style={{ color: "rgba(100,116,139,0.65)" }}>
-        ¿Ya tenés cuenta?{" "}
+      <p className="text-center text-xs text-slate-500">
+        Ya tenes cuenta?{" "}
         <Link
           href="/login"
-          className="font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+          className="font-semibold text-amber-200 transition-colors hover:text-white"
         >
-          Iniciá sesión
+          Inicia sesion
         </Link>
       </p>
     </div>

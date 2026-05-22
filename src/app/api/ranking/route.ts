@@ -13,10 +13,14 @@ export async function GET() {
         name: true,
         image: true,
         totalPoints: true,
+        predictionPoints: {
+          where: { correct: true },
+          select: { id: true },
+        },
         _count: {
           select: {
             predictions: true,
-            predictionPoints: { where: { correct: true } },
+            predictionPoints: true,
           },
         },
       },

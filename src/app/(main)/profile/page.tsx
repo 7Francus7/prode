@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { calculateAccuracy } from "@/lib/ranking";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ProfileForm } from "./ProfileForm";
@@ -19,7 +20,7 @@ function StatBox({ label, value, color = "text-white" }: { label: string; value:
 }
 
 async function getProfileData(userId: string) {
-  const [user, correctCount, totalPredictions, rank] = await Promise.all([
+  const [user, correctCount, totalPredictions, resolvedPredictions] = await Promise.all([
     prisma.user.findUniqueOrThrow({
       where: { id: userId },
       select: {
@@ -34,21 +35,21 @@ async function getProfileData(userId: string) {
     }),
     prisma.predictionPoints.count({ where: { userId, correct: true } }),
     prisma.prediction.count({ where: { userId } }),
-    prisma.user
-      .count({ where: { totalPoints: { gt: 0 } } })
-      .then(async () => {
-        const u = await prisma.user.findUnique({ where: { id: userId }, select: { totalPoints: true } });
-        if (!u || u.totalPoints === 0) return 0;
-        const above = await prisma.user.count({ where: { totalPoints: { gt: u.totalPoints } } });
-        return above + 1;
-      }),
+    prisma.predictionPoints.count({ where: { userId } }),
   ]);
 
-  const resolvedPredictions = await prisma.predictionPoints.count({ where: { userId } });
-  const accuracy =
-    resolvedPredictions > 0 ? Math.round((correctCount / resolvedPredictions) * 100) : 0;
+  const rank =
+    (await prisma.user.count({
+      where: { isAdmin: false, totalPoints: { gt: user.totalPoints } },
+    })) + 1;
 
-  return { user, correctCount, totalPredictions, rank, accuracy };
+  return {
+    user,
+    correctCount,
+    totalPredictions,
+    rank,
+    accuracy: calculateAccuracy(correctCount, resolvedPredictions),
+  };
 }
 
 export default async function ProfilePage() {
@@ -134,7 +135,11 @@ export default async function ProfilePage() {
         <StatBox label="Puntos" value={user.totalPoints} />
         <StatBox label="Aciertos" value={correctCount} color="text-emerald-400" />
         <StatBox label="Predicciones" value={totalPredictions} color="text-blue-400" />
-        <StatBox label="Efectiv." value={`${accuracy}%`} color="text-amber-400" />
+        <StatBox
+          label="Efectiv."
+          value={accuracy !== null ? `${accuracy}%` : "—"}
+          color="text-amber-400"
+        />
       </div>
 
       {/* Account info */}

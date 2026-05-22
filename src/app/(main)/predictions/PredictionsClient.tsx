@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { cn, formatMatchDate, getFlagEmoji } from "@/lib/utils";
+import { calculateAccuracy } from "@/lib/ranking";
 import type { PredictionWithMatch } from "@/types";
 
 const FILTERS = [
@@ -48,8 +49,7 @@ export default function PredictionsClient({
       (prediction) => prediction.predictionPoints != null && !prediction.predictionPoints.correct
     ).length;
     const pending = initialPredictions.filter((prediction) => prediction.predictionPoints == null).length;
-    const accuracy =
-      correct + wrong > 0 ? Math.round((correct / (correct + wrong)) * 100) : null;
+    const accuracy = calculateAccuracy(correct, correct + wrong);
 
     return { total, correct, wrong, pending, accuracy };
   }, [initialPredictions]);

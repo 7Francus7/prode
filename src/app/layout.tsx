@@ -1,7 +1,18 @@
 import type { Metadata, Viewport } from "next";
+import { Manrope, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/SessionProvider";
 import SwRegister from "@/components/SwRegister";
+
+const bodyFont = Manrope({
+  subsets: ["latin"],
+  variable: "--font-body",
+});
+
+const displayFont = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-display",
+});
 
 export const metadata: Metadata = {
   title: "Prode Mundial 2026",
@@ -23,7 +34,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className="dark">
+    <html lang="es" className={`dark ${bodyFont.variable} ${displayFont.variable}`}>
       <head>
         {/* Chrome/Android installability — Next.js doesn't auto-generate this one */}
         <meta name="mobile-web-app-capable" content="yes" />

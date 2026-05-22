@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export async function PATCH(
   request: Request,
@@ -12,17 +13,31 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  const { isPaid } = await request.json();
+  const body = await request.json().catch(() => null);
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "Payload inválido" }, { status: 400 });
+  }
+
+  const { isPaid } = body as { isPaid?: unknown };
 
   if (typeof isPaid !== "boolean") {
     return NextResponse.json({ error: "isPaid debe ser boolean" }, { status: 400 });
   }
 
-  const user = await prisma.user.update({
-    where: { id },
-    data: { isPaid },
-    select: { id: true, name: true, email: true, isPaid: true },
-  });
+  try {
+    const user = await prisma.user.update({
+      where: { id },
+      data: { isPaid },
+      select: { id: true, name: true, email: true, isPaid: true },
+    });
 
-  return NextResponse.json(user);
+    return NextResponse.json(user);
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+      return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+    }
+
+    console.error("[admin:user-payment] error:", error);
+    return NextResponse.json({ error: "No se pudo actualizar el pago" }, { status: 500 });
+  }
 }

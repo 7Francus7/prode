@@ -10,8 +10,11 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:validate-seed": "tsx prisma/validate-seed.ts",
     "qa:smoke": "tsx scripts/qa-smoke.ts",
+    "deploy:check": "tsx scripts/deploy-check.ts",
     "db:studio": "prisma studio",
-    "db:generate": "prisma generate"
+    "db:generate": "prisma generate",
+    "admin:make": "tsx scripts/make-admin.ts",
+    "push:keys": "tsx scripts/generate-vapid.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",

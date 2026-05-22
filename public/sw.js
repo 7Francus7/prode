@@ -1,34 +1,69 @@
-const CACHE = "prode-v1";
-const OFFLINE_URLS = ["/", "/fixture", "/ranking"];
+const STATIC_CACHE = "prode-static-v2";
+const STATIC_PATH_PREFIXES = ["/_next/static/", "/icons/", "/api/icon/"];
+const STATIC_DESTINATIONS = new Set([
+  "style",
+  "script",
+  "worker",
+  "image",
+  "font",
+  "audio",
+  "video",
+  "manifest",
+]);
 
-self.addEventListener("install", (e) => {
-  e.waitUntil(
-    caches.open(CACHE).then((c) => c.addAll(OFFLINE_URLS)).then(() => self.skipWaiting())
+self.addEventListener("install", () => {
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(keys.filter((key) => key !== STATIC_CACHE).map((key) => caches.delete(key)))
+      )
+      .then(() => self.clients.claim())
   );
 });
 
-self.addEventListener("activate", (e) => {
-  e.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-    ).then(() => self.clients.claim())
-  );
-});
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
+  if (request.method !== "GET") return;
 
-self.addEventListener("fetch", (e) => {
-  if (e.request.method !== "GET") return;
-  const url = new URL(e.request.url);
-  // API calls: network-first, no cache
-  if (url.pathname.startsWith("/api/")) return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+  if (request.mode === "navigate" || request.destination === "document") return;
 
-  e.respondWith(
-    fetch(e.request)
-      .then((res) => {
-        const clone = res.clone();
-        caches.open(CACHE).then((c) => c.put(e.request, clone));
-        return res;
-      })
-      .catch(() => caches.match(e.request).then((r) => r ?? Response.error()))
+  const isIconAsset = url.pathname.startsWith("/api/icon/");
+  if (url.pathname.startsWith("/api/") && !isIconAsset) return;
+
+  const isStaticAsset =
+    isIconAsset ||
+    STATIC_DESTINATIONS.has(request.destination) ||
+    STATIC_PATH_PREFIXES.some((prefix) => url.pathname.startsWith(prefix));
+
+  if (!isStaticAsset) return;
+
+  event.respondWith(
+    caches.open(STATIC_CACHE).then(async (cache) => {
+      const cached = await cache.match(request);
+      const networkPromise = fetch(request)
+        .then((response) => {
+          const contentType = response.headers.get("content-type") ?? "";
+          if (response.ok && !contentType.includes("text/html")) {
+            cache.put(request, response.clone()).catch(() => {});
+          }
+          return response;
+        })
+        .catch(() => null);
+
+      if (cached) {
+        event.waitUntil(networkPromise);
+        return cached;
+      }
+
+      return networkPromise.then((response) => response ?? Response.error());
+    })
   );
 });
 

@@ -22,81 +22,63 @@ export default function RankingTable({
   startFrom = 1,
 }: RankingTableProps) {
   return (
-    <div className="rounded-2xl border border-brand-border overflow-hidden">
-      {/* Header */}
-      <div className="grid grid-cols-[2rem_1fr_3.5rem_3rem_3rem] items-center px-4 py-2.5 border-b border-brand-border bg-black/20">
-        <span className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.14em]">#</span>
-        <span className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.14em]">Jugador</span>
-        <span className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.14em] text-center">Pts</span>
-        <span className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.14em] text-center hidden sm:block">Ac.</span>
-        <span className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.14em] text-center hidden sm:block">%</span>
+    <div className="overflow-hidden rounded-[1.8rem] border border-white/6 bg-black/10">
+      <div className="grid grid-cols-[2rem_1fr_3.5rem_3rem_3rem] items-center border-b border-white/6 bg-white/[0.03] px-4 py-3">
+        <span className="text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-500">#</span>
+        <span className="text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-500">Jugador</span>
+        <span className="text-center text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-500">Pts</span>
+        <span className="hidden text-center text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-500 sm:block">Ac.</span>
+        <span className="hidden text-center text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-500 sm:block">%</span>
       </div>
 
-      {/* Rows */}
-      <div className="divide-y divide-brand-border">
+      <div className="divide-y divide-white/6">
         {entries.map((entry, i) => {
           const rank = entry.rank ?? startFrom + i;
           const isMe = entry.id === currentUserId;
+
           return (
             <div
               key={entry.id}
               className={cn(
-                "grid grid-cols-[2rem_1fr_3.5rem_3rem_3rem] items-center px-4 py-3 transition-colors",
-                isMe
-                  ? "bg-blue-600/8 border-l-2 border-l-blue-500"
-                  : "[@media(hover:hover)]:hover:bg-white/[0.02]"
+                "grid grid-cols-[2rem_1fr_3.5rem_3rem_3rem] items-center px-4 py-3.5 transition-colors",
+                isMe ? "bg-amber-400/[0.06]" : "[@media(hover:hover)]:hover:bg-white/[0.02]"
               )}
             >
-              {/* Rank */}
               <span className="text-xs font-bold">
-                {rank <= 3 ? (
-                  <span>{MEDAL[rank - 1]}</span>
-                ) : (
-                  <span className="text-slate-600 font-mono">{rank}</span>
-                )}
+                {rank <= 3 ? <span>{MEDAL[rank - 1]}</span> : <span className="font-mono text-slate-500">{rank}</span>}
               </span>
 
-              {/* Player */}
-              <div className="flex items-center gap-2.5 min-w-0">
+              <div className="flex min-w-0 items-center gap-2.5">
                 {entry.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={entry.image}
                     alt={entry.name ?? ""}
-                    className="w-7 h-7 rounded-full object-cover flex-shrink-0 border border-brand-border"
+                    className="h-8 w-8 flex-shrink-0 rounded-full border border-white/8 object-cover"
                   />
                 ) : (
-                  <div className="w-7 h-7 rounded-full bg-brand-card-2 border border-brand-border flex items-center justify-center text-[10px] font-bold text-slate-500 flex-shrink-0">
+                  <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/7 bg-white/5 text-[10px] font-bold text-slate-300">
                     {getInitials(entry.name)}
                   </div>
                 )}
-                <span
-                  className={cn(
-                    "text-sm font-semibold truncate",
-                    isMe ? "text-blue-400" : "text-white"
-                  )}
-                >
-                  {entry.name ?? "Anónimo"}
+                <span className={cn("truncate text-sm font-semibold", isMe ? "text-amber-100" : "text-white")}>
+                  {entry.name ?? "Anonimo"}
                   {isMe && (
-                    <span className="ml-1.5 text-[9px] font-bold text-blue-600 uppercase tracking-wider">
+                    <span className="ml-1.5 text-[9px] font-semibold uppercase tracking-[0.2em] text-amber-300/70">
                       vos
                     </span>
                   )}
                 </span>
               </div>
 
-              {/* Points */}
-              <span className="text-sm font-black text-white text-center">
+              <span className="text-center font-display text-[1.05rem] font-bold text-white">
                 {entry.totalPoints}
               </span>
 
-              {/* Correct */}
-              <span className="text-xs font-semibold text-emerald-600 text-center hidden sm:block">
+              <span className="hidden text-center text-xs font-semibold text-emerald-300 sm:block">
                 {entry.correctPredictions}
               </span>
 
-              {/* Accuracy */}
-              <span className="text-xs text-slate-600 text-center hidden sm:block">
+              <span className="hidden text-center text-xs text-slate-400 sm:block">
                 {entry.accuracy !== null ? `${entry.accuracy}%` : "—"}
               </span>
             </div>

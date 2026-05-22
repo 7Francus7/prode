@@ -10,31 +10,31 @@ const GROUP_TABS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
 
 function SkeletonCard() {
   return (
-    <div className="rounded-2xl border border-brand-border overflow-hidden bg-brand-card">
+    <div className="overflow-hidden rounded-2xl border border-brand-border bg-brand-card">
       <div className="px-4 pt-3.5 pb-0">
-        <div className="h-3 w-16 skeleton rounded-md" />
+        <div className="h-3 w-16 rounded-md skeleton" />
       </div>
       <div className="px-4 pt-3 pb-3">
         <div className="flex items-center gap-2">
-          <div className="flex-1 flex flex-col items-center gap-2">
-            <div className="w-10 h-10 skeleton rounded-full" />
-            <div className="h-3 w-10 skeleton rounded-md" />
+          <div className="flex flex-1 flex-col items-center gap-2">
+            <div className="h-10 w-10 rounded-full skeleton" />
+            <div className="h-3 w-10 rounded-md skeleton" />
           </div>
-          <div className="flex flex-col items-center gap-2 min-w-[84px]">
-            <div className="h-7 w-16 skeleton rounded-lg" />
-            <div className="h-2.5 w-20 skeleton rounded-md" />
+          <div className="flex min-w-[84px] flex-col items-center gap-2">
+            <div className="h-7 w-16 rounded-lg skeleton" />
+            <div className="h-2.5 w-20 rounded-md skeleton" />
           </div>
-          <div className="flex-1 flex flex-col items-center gap-2">
-            <div className="w-10 h-10 skeleton rounded-full" />
-            <div className="h-3 w-10 skeleton rounded-md" />
+          <div className="flex flex-1 flex-col items-center gap-2">
+            <div className="h-10 w-10 rounded-full skeleton" />
+            <div className="h-3 w-10 rounded-md skeleton" />
           </div>
         </div>
       </div>
-      <div className="px-3 pb-3 border-t border-brand-border pt-2.5">
+      <div className="border-t border-brand-border px-3 pt-2.5 pb-3">
         <div className="flex gap-1.5">
-          <div className="flex-1 h-11 skeleton rounded-xl" />
-          <div className="flex-1 h-11 skeleton rounded-xl" />
-          <div className="flex-1 h-11 skeleton rounded-xl" />
+          <div className="h-11 flex-1 rounded-xl skeleton" />
+          <div className="h-11 flex-1 rounded-xl skeleton" />
+          <div className="h-11 flex-1 rounded-xl skeleton" />
         </div>
       </div>
     </div>
@@ -85,28 +85,52 @@ export default function FixtureClient({
   }, [activeGroup, initialGroup]);
 
   return (
-    <div className="space-y-4 animate-fade-in">
-      <div className="pt-2">
-        <p className="text-[10px] uppercase tracking-[0.18em] text-slate-600 mb-1">Mundial 2026</p>
-        <h1 className="text-[22px] font-black text-white tracking-tight leading-none">Fixture</h1>
-      </div>
+    <div className="space-y-5 animate-fade-in">
+      <section
+        className="rounded-[1.9rem] border px-4 py-5"
+        style={{
+          background:
+            "radial-gradient(circle at top left, rgba(214,164,74,0.12), transparent 26%), " +
+            "linear-gradient(180deg, rgba(16,20,29,0.96) 0%, rgba(9,12,19,0.96) 100%)",
+          borderColor: "rgba(255,255,255,0.06)",
+          boxShadow: "0 28px 60px -36px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.035)",
+        }}
+      >
+        <p className="text-[0.62rem] font-semibold uppercase tracking-[0.24em] text-slate-500">
+          Fase de grupos
+        </p>
+        <h1 className="font-display text-[2rem] font-bold tracking-[-0.05em] text-white">
+          Fixture
+        </h1>
+        <p className="mt-2 max-w-[34rem] text-sm leading-relaxed text-slate-400">
+          Cambia de grupo, revisa posiciones y deja tus picks desde una sola vista.
+        </p>
 
-      <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5">
-        {GROUP_TABS.map((group) => (
-          <button
-            key={group}
-            onClick={() => setActiveGroup(group)}
-            className={cn(
-              "flex-shrink-0 w-9 h-9 rounded-xl text-xs font-black transition-all border",
-              activeGroup === group
-                ? "bg-blue-600 text-white border-blue-500"
-                : "bg-brand-card text-slate-500 border-brand-border hover:border-slate-600 hover:text-slate-300"
-            )}
-          >
-            {group}
-          </button>
-        ))}
-      </div>
+        <div className="mt-5 flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5">
+          {GROUP_TABS.map((group) => (
+            <button
+              key={group}
+              onClick={() => setActiveGroup(group)}
+              className={cn(
+                "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl border text-xs font-bold transition-all",
+                activeGroup === group
+                  ? "text-white"
+                  : "bg-black/10 text-slate-500 hover:border-slate-600 hover:text-slate-300"
+              )}
+              style={
+                activeGroup === group
+                  ? {
+                      background: "rgba(214,164,74,0.14)",
+                      borderColor: "rgba(214,164,74,0.22)",
+                    }
+                  : { borderColor: "rgba(255,255,255,0.06)" }
+              }
+            >
+              {group}
+            </button>
+          ))}
+        </div>
+      </section>
 
       <GroupStandings
         groupName={activeGroup}
@@ -115,25 +139,27 @@ export default function FixtureClient({
       />
 
       {error && (
-        <div className="rounded-xl px-4 py-3 text-sm border border-red-800/30 bg-red-900/10 text-red-300">
+        <div className="rounded-xl border border-red-800/30 bg-red-900/10 px-4 py-3 text-sm text-red-300">
           {error}
         </div>
       )}
 
       {loading ? (
         <div className="space-y-3">
-          {[1, 2, 3].map((index) => <SkeletonCard key={index} />)}
+          {[1, 2, 3].map((index) => (
+            <SkeletonCard key={index} />
+          ))}
         </div>
       ) : matches.length === 0 ? (
-        <div className="text-center py-14 rounded-2xl border border-brand-border bg-brand-card">
-          <div className="w-10 h-10 rounded-full bg-brand-card-2 border border-brand-border flex items-center justify-center mx-auto mb-3">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-600">
+        <div className="rounded-[1.75rem] border border-white/6 bg-white/3 px-4 py-14 text-center">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-white/7 bg-white/5">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500">
               <circle cx="12" cy="12" r="10" />
               <path d="M12 8v4M12 16h.01" />
             </svg>
           </div>
-          <p className="text-slate-500 text-sm font-medium">Sin partidos en Grupo {activeGroup}</p>
-          <p className="text-slate-700 text-xs mt-1">Los partidos se cargarán próximamente</p>
+          <p className="font-display text-[1.2rem] font-bold text-white">Sin partidos en Grupo {activeGroup}</p>
+          <p className="mt-2 text-sm text-slate-400">Los partidos se cargaran proximamente.</p>
         </div>
       ) : (
         <div className="space-y-3">

@@ -343,6 +343,16 @@ async function main() {
     assert(cronSync.status === 200, `Cron sync failed: ${cronSync.status}`);
     assert(typeof cronJson.synced === "number", "Cron sync should return stats");
 
+    const vercelCronUnauthorized = await fetch(`${baseUrl}/api/cron/sync`);
+    assert(vercelCronUnauthorized.status === 401, `Vercel cron should require auth: ${vercelCronUnauthorized.status}`);
+
+    const vercelCron = await fetch(`${baseUrl}/api/cron/sync`, {
+      headers: { authorization: `Bearer ${process.env.CRON_SECRET ?? ""}` },
+    });
+    const vercelCronJson = (await vercelCron.json()) as { data?: { synced?: number } };
+    assert(vercelCron.status === 200, `Vercel cron route failed: ${vercelCron.status}`);
+    assert(typeof vercelCronJson.data?.synced === "number", "Vercel cron route should return stats");
+
     console.log("Checking push subscribe/unsubscribe and admin errors");
     const subscribe = await unpaid.post("/api/push/subscribe", {
       endpoint: fakeEndpoint,
