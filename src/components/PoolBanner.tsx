@@ -13,13 +13,9 @@ export async function PoolBanner({ variant = "home" }: PoolBannerProps) {
     <div
       className="relative overflow-hidden rounded-[1.75rem] px-5 py-5"
       style={{
-        background:
-          "radial-gradient(circle at 12% 10%, rgba(245,158,11,0.18), transparent 32%), " +
-          "radial-gradient(circle at 88% 12%, rgba(248,250,252,0.06), transparent 26%), " +
-          "linear-gradient(180deg, rgba(20,16,10,0.96) 0%, rgba(12,10,8,0.96) 100%)",
-        border: "1px solid rgba(245,158,11,0.16)",
-        boxShadow:
-          "0 24px 60px -28px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.04)",
+        background: "var(--app-pool-bg)",
+        border: "1px solid var(--app-pool-border)",
+        boxShadow: "var(--app-pool-shadow)",
       }}
     >
       <div
@@ -80,8 +76,8 @@ export async function PoolBanner({ variant = "home" }: PoolBannerProps) {
         <div
           className="shrink-0 rounded-2xl px-3 py-2 text-right"
           style={{
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.06)",
+            background: "var(--app-panel-subtle-bg)",
+            border: "1px solid var(--app-border)",
           }}
         >
           <p className="text-[0.6rem] font-semibold uppercase tracking-[0.18em] text-stone-500">

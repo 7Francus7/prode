@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#080b14",
+  themeColor: "#f6f7fb",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -34,10 +34,25 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`dark ${bodyFont.variable} ${displayFont.variable}`}>
+    <html lang="es" className={`${bodyFont.variable} ${displayFont.variable}`} suppressHydrationWarning>
       <head>
-        {/* Chrome/Android installability — Next.js doesn't auto-generate this one */}
+        {/* Chrome/Android installability - Next.js doesn't auto-generate this one */}
         <meta name="mobile-web-app-capable" content="yes" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (() => {
+                try {
+                  const saved = localStorage.getItem("prode-theme");
+                  const theme = saved === "dark" ? "dark" : "light";
+                  const root = document.documentElement;
+                  root.classList.toggle("dark", theme === "dark");
+                  root.dataset.theme = theme;
+                } catch {}
+              })();
+            `,
+          }}
+        />
       </head>
       <body>
         <SessionProvider>{children}</SessionProvider>

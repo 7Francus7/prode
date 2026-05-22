@@ -117,10 +117,9 @@ function SectionShell({
     <section
       className="rounded-[1.8rem] border px-4 py-5 sm:px-5"
       style={{
-        background:
-          "linear-gradient(180deg, rgba(14,19,30,0.9) 0%, rgba(9,13,20,0.92) 100%)",
-        borderColor: "rgba(255,255,255,0.06)",
-        boxShadow: "0 20px 48px -30px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.03)",
+        background: "var(--app-panel-bg)",
+        borderColor: "var(--app-border)",
+        boxShadow: "var(--app-panel-shadow)",
       }}
     >
       <div className="mb-4 flex items-end justify-between gap-4">
@@ -135,8 +134,7 @@ function SectionShell({
         {href && hrefLabel && (
           <Link
             href={href}
-            className="inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-[0.72rem] font-semibold text-stone-300 transition-colors hover:text-white"
-            style={{ borderColor: "rgba(255,255,255,0.08)" }}
+            className="theme-outline-button inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-[0.72rem] font-semibold transition-colors hover:[color:var(--app-text)]"
           >
             {hrefLabel}
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -203,12 +201,9 @@ export default async function HomePage() {
       <section
         className="relative overflow-hidden rounded-[2rem] border px-4 py-5 sm:px-5 sm:py-6"
         style={{
-          background:
-            "radial-gradient(circle at top left, rgba(245,158,11,0.15), transparent 30%), " +
-            "radial-gradient(circle at 82% 18%, rgba(148,163,184,0.12), transparent 22%), " +
-            "linear-gradient(180deg, rgba(18,22,33,0.96) 0%, rgba(9,11,17,0.98) 100%)",
-          borderColor: "rgba(255,255,255,0.06)",
-          boxShadow: "0 32px 70px -38px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.04)",
+          background: "var(--app-hero-bg)",
+          borderColor: "var(--app-hero-border)",
+          boxShadow: "var(--app-hero-shadow)",
         }}
       >
         <div
@@ -263,8 +258,7 @@ export default async function HomePage() {
               </Link>
               <Link
                 href="/fixture"
-                className="inline-flex min-h-[44px] items-center justify-center rounded-full border px-4 text-[0.84rem] font-semibold text-stone-200 transition-colors hover:text-white"
-                style={{ borderColor: "rgba(255,255,255,0.09)" }}
+                className="theme-outline-button inline-flex min-h-[44px] items-center justify-center rounded-full border px-4 text-[0.84rem] font-semibold transition-colors hover:[color:var(--app-text)]"
               >
                 Abrir fixture completo
               </Link>
@@ -281,8 +275,8 @@ export default async function HomePage() {
                 <div
                   className="rounded-[1.6rem] border px-4 py-4"
                   style={{
-                    background: "rgba(255,255,255,0.03)",
-                    borderColor: "rgba(255,255,255,0.06)",
+                    background: "var(--app-panel-subtle-bg)",
+                    borderColor: "var(--app-border)",
                   }}
                 >
                   <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-slate-500">
@@ -337,8 +331,8 @@ export default async function HomePage() {
           <div
             className="rounded-[1.5rem] border px-4 py-10 text-center"
             style={{
-              background: "rgba(255,255,255,0.03)",
-              borderColor: "rgba(255,255,255,0.05)",
+              background: "var(--app-panel-subtle-bg)",
+              borderColor: "var(--app-border)",
             }}
           >
             <p className="font-display text-[1.25rem] font-bold text-white">
@@ -371,8 +365,8 @@ export default async function HomePage() {
           <div
             className="rounded-[1.5rem] border px-4 py-8 text-center"
             style={{
-              background: "rgba(255,255,255,0.03)",
-              borderColor: "rgba(255,255,255,0.05)",
+              background: "var(--app-panel-subtle-bg)",
+              borderColor: "var(--app-border)",
             }}
           >
             <p className="font-display text-[1.15rem] font-bold text-white">

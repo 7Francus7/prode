@@ -89,11 +89,9 @@ export default function FixtureClient({
       <section
         className="rounded-[1.9rem] border px-4 py-5"
         style={{
-          background:
-            "radial-gradient(circle at top left, rgba(214,164,74,0.12), transparent 26%), " +
-            "linear-gradient(180deg, rgba(16,20,29,0.96) 0%, rgba(9,12,19,0.96) 100%)",
-          borderColor: "rgba(255,255,255,0.06)",
-          boxShadow: "0 28px 60px -36px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.035)",
+          background: "var(--app-hero-bg)",
+          borderColor: "var(--app-hero-border)",
+          boxShadow: "var(--app-hero-shadow)",
         }}
       >
         <p className="text-[0.62rem] font-semibold uppercase tracking-[0.24em] text-slate-500">

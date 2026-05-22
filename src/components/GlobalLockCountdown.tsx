@@ -90,8 +90,8 @@ export function GlobalLockCountdown({ variant = "home" }: Props) {
       <div
         className="flex items-center gap-3 rounded-[1.6rem] px-4 py-4"
         style={{
-          background: "linear-gradient(180deg, rgba(20,20,20,0.56) 0%, rgba(10,10,10,0.56) 100%)",
-          border: "1px solid rgba(255,255,255,0.06)",
+          background: "var(--app-panel-bg)",
+          border: "1px solid var(--app-border)",
         }}
       >
         <div
@@ -164,9 +164,9 @@ export function GlobalLockCountdown({ variant = "home" }: Props) {
     <div
       className={`rounded-[1.6rem] px-4 py-4 ${isUrgent ? "animate-urgent-blink" : ""}`}
       style={{
-        background: `linear-gradient(180deg, ${bgColor} 0%, rgba(8,10,16,0.8) 100%)`,
+        background: `linear-gradient(180deg, ${bgColor} 0%, var(--app-panel-subtle-bg) 100%)`,
         border: `1px solid ${borderColor}`,
-        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)",
+        boxShadow: "var(--app-panel-shadow)",
       }}
     >
       <div className="flex items-center gap-2 mb-3">

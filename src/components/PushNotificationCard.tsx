@@ -105,7 +105,7 @@ export default function PushNotificationCard() {
     return (
       <div
         className="flex items-center gap-3 rounded-[1.6rem] border px-4 py-4"
-        style={{ background: "rgba(255,255,255,0.03)", borderColor: "rgba(255,255,255,0.06)" }}
+        style={{ background: "var(--app-panel-subtle-bg)", borderColor: "var(--app-border)" }}
       >
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/6 bg-white/5">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500">
@@ -127,7 +127,7 @@ export default function PushNotificationCard() {
       <div
         className="flex items-center gap-3 rounded-[1.6rem] border px-4 py-4"
         style={{
-          background: "linear-gradient(180deg, rgba(10,28,24,0.9) 0%, rgba(7,16,16,0.92) 100%)",
+          background: "linear-gradient(180deg, rgba(16,185,129,0.12) 0%, var(--app-panel-bg) 100%)",
           borderColor: "rgba(16,185,129,0.12)",
         }}
       >
@@ -155,7 +155,7 @@ export default function PushNotificationCard() {
   return (
     <div
       className="flex items-center gap-3 rounded-[1.6rem] border px-4 py-4"
-      style={{ background: "rgba(255,255,255,0.03)", borderColor: "rgba(255,255,255,0.06)" }}
+      style={{ background: "var(--app-panel-subtle-bg)", borderColor: "var(--app-border)" }}
     >
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-amber-500/15 bg-amber-500/10">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

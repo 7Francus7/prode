@@ -1,21 +1,17 @@
+import ThemeToggle from "@/components/ThemeToggle";
+
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden px-4 py-12"
-      style={{
-        background:
-          "radial-gradient(circle at 50% -8%, rgba(214,164,74,0.14) 0%, transparent 32%), " +
-          "radial-gradient(circle at 8% 92%, rgba(148,163,184,0.08) 0%, transparent 24%), " +
-          "linear-gradient(180deg, #0d1119 0%, #090c13 48%, #06080d 100%)",
-      }}
+      className="auth-shell relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden px-4 py-12"
     >
       <div
         className="pointer-events-none fixed inset-0"
         style={{
           zIndex: 0,
           backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), " +
-            "linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)",
+            "linear-gradient(var(--app-grid-line) 1px, transparent 1px), " +
+            "linear-gradient(90deg, var(--app-grid-line) 1px, transparent 1px)",
           backgroundSize: "56px 56px",
           maskImage:
             "radial-gradient(ellipse 82% 82% at 50% 45%, rgba(0,0,0,0.8) 0%, transparent 100%)",
@@ -23,6 +19,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             "radial-gradient(ellipse 82% 82% at 50% 45%, rgba(0,0,0,0.8) 0%, transparent 100%)",
         }}
       />
+
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle compact />
+      </div>
 
       <div className="relative z-10 w-full max-w-sm">
         <div className="mb-12 flex flex-col items-center">

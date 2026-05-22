@@ -36,10 +36,9 @@ export default function StatsCards({ totalPoints, correctCount, rank }: StatsCar
         label="Puntos"
         valueClassName="font-display text-[1.8rem] font-bold leading-none text-white"
         style={{
-          background:
-            "linear-gradient(180deg, rgba(18,24,36,0.92) 0%, rgba(10,14,22,0.92) 100%)",
-          border: "1px solid rgba(255,255,255,0.06)",
-          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)",
+          background: "var(--app-panel-bg)",
+          border: "1px solid var(--app-border)",
+          boxShadow: "var(--app-panel-shadow)",
         }}
       />
       <StatCard
@@ -48,9 +47,9 @@ export default function StatsCards({ totalPoints, correctCount, rank }: StatsCar
         valueClassName="font-display text-[1.8rem] font-bold leading-none text-emerald-300"
         style={{
           background:
-            "linear-gradient(180deg, rgba(13,33,29,0.92) 0%, rgba(8,20,19,0.92) 100%)",
+            "linear-gradient(180deg, rgba(16,185,129,0.1) 0%, rgba(255,255,255,0.92) 100%)",
           border: "1px solid rgba(16,185,129,0.12)",
-          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)",
+          boxShadow: "var(--app-panel-shadow)",
         }}
       />
       <StatCard
@@ -67,9 +66,9 @@ export default function StatsCards({ totalPoints, correctCount, rank }: StatsCar
         valueClassName="font-display text-[1.8rem] font-bold leading-none text-amber-300"
         style={{
           background:
-            "linear-gradient(180deg, rgba(34,24,11,0.92) 0%, rgba(20,14,7,0.92) 100%)",
+            "linear-gradient(180deg, rgba(245,158,11,0.1) 0%, rgba(255,255,255,0.92) 100%)",
           border: "1px solid rgba(245,158,11,0.14)",
-          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)",
+          boxShadow: "var(--app-panel-shadow)",
         }}
       />
     </div>

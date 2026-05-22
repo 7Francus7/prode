@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import ThemeToggle from "@/components/ThemeToggle";
 
 function IconHome() {
   return (
@@ -62,10 +63,10 @@ const NAV_ITEMS = [
 ];
 
 const NAVBAR_GLASS: React.CSSProperties = {
-  background: "rgba(8, 11, 18, 0.9)",
+  background: "var(--app-navbar-bg)",
   backdropFilter: "blur(20px) saturate(1.35)",
   WebkitBackdropFilter: "blur(20px) saturate(1.35)",
-  borderColor: "rgba(255,255,255,0.06)",
+  borderColor: "var(--app-navbar-border)",
 };
 
 export default function Navbar() {
@@ -113,7 +114,9 @@ export default function Navbar() {
           </div>
         </div>
 
-        <nav className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <nav className="flex items-center gap-1">
           {NAV_ITEMS.map((item) => {
             const active = pathname === item.href;
             return (
@@ -128,7 +131,7 @@ export default function Navbar() {
                   active
                     ? {
                         background: "rgba(214,164,74,0.12)",
-                        border: "1px solid rgba(214,164,74,0.18)",
+                        border: "1px solid rgba(214,164,74,0.22)",
                       }
                     : { border: "1px solid transparent" }
                 }
@@ -138,8 +141,13 @@ export default function Navbar() {
               </Link>
             );
           })}
-        </nav>
+          </nav>
+        </div>
       </header>
+
+      <div className="fixed top-3 right-4 z-50 sm:hidden" style={{ top: "calc(0.75rem + env(safe-area-inset-top, 0px))" }}>
+        <ThemeToggle compact />
+      </div>
 
       <nav
         className="fixed inset-x-0 bottom-0 z-50 border-t sm:hidden"

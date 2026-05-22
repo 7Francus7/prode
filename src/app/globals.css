@@ -57,19 +57,124 @@
   }
 }
 
+:root {
+  --color-brand-dark: #f3f6fb;
+  --color-brand-card: #ffffff;
+  --color-brand-card-2: #eef3f9;
+  --color-brand-border: #d5dfeb;
+  --color-brand-gold: #b45309;
+  --color-brand-silver: #64748b;
+  --color-brand-bronze: #9a3412;
+
+  --app-body-bg:
+    radial-gradient(circle at top, rgba(214, 158, 46, 0.12), transparent 24%),
+    radial-gradient(circle at 85% 20%, rgba(59, 130, 246, 0.08), transparent 22%),
+    linear-gradient(180deg, #f7f9fc 0%, #eef3f8 100%);
+  --app-shell-bg: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+  --app-auth-bg:
+    radial-gradient(circle at 50% -8%, rgba(214, 164, 74, 0.16) 0%, transparent 30%),
+    radial-gradient(circle at 8% 92%, rgba(59, 130, 246, 0.08) 0%, transparent 24%),
+    linear-gradient(180deg, #f9fbfe 0%, #edf2f7 100%);
+  --app-grid-line: rgba(15, 23, 42, 0.05);
+  --app-text: #0f172a;
+  --app-text-muted: #334155;
+  --app-text-soft: #64748b;
+  --app-text-faint: #94a3b8;
+  --app-border: rgba(15, 23, 42, 0.1);
+  --app-border-strong: rgba(15, 23, 42, 0.16);
+  --app-glass-bg: rgba(255, 255, 255, 0.86);
+  --app-glass-border: rgba(148, 163, 184, 0.22);
+  --app-glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 22px 46px -28px rgba(15, 23, 42, 0.24);
+  --app-input-bg: rgba(255, 255, 255, 0.94);
+  --app-input-border: rgba(148, 163, 184, 0.35);
+  --app-panel-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(247, 250, 253, 0.98) 100%);
+  --app-panel-soft-bg: rgba(255, 255, 255, 0.76);
+  --app-panel-subtle-bg: rgba(248, 250, 252, 0.92);
+  --app-panel-shadow: 0 18px 44px -30px rgba(15, 23, 42, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --app-hero-bg:
+    radial-gradient(circle at top left, rgba(245, 158, 11, 0.18), transparent 30%),
+    radial-gradient(circle at 82% 18%, rgba(59, 130, 246, 0.1), transparent 22%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(244, 247, 251, 0.98) 100%);
+  --app-hero-border: rgba(148, 163, 184, 0.22);
+  --app-hero-shadow: 0 24px 58px -36px rgba(15, 23, 42, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  --app-pool-bg:
+    radial-gradient(circle at 12% 10%, rgba(245, 158, 11, 0.14), transparent 32%),
+    radial-gradient(circle at 88% 12%, rgba(59, 130, 246, 0.08), transparent 26%),
+    linear-gradient(180deg, rgba(255, 251, 235, 0.98) 0%, rgba(255, 247, 237, 0.98) 100%);
+  --app-pool-border: rgba(245, 158, 11, 0.22);
+  --app-pool-shadow: 0 24px 60px -34px rgba(180, 83, 9, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  --app-navbar-bg: rgba(255, 255, 255, 0.9);
+  --app-navbar-border: rgba(148, 163, 184, 0.18);
+  --app-accent-soft: rgba(245, 158, 11, 0.14);
+  --app-accent-strong: #b45309;
+}
+
+html.dark {
+  --color-brand-dark: #080b14;
+  --color-brand-card: #0d1520;
+  --color-brand-card-2: #111e2e;
+  --color-brand-border: #1c2a3a;
+  --color-brand-gold: #f59e0b;
+  --color-brand-silver: #94a3b8;
+  --color-brand-bronze: #cd7c3a;
+
+  --app-body-bg:
+    radial-gradient(circle at top, rgba(214, 158, 46, 0.08), transparent 26%),
+    radial-gradient(circle at 85% 20%, rgba(120, 119, 198, 0.08), transparent 22%),
+    linear-gradient(165deg, #0c111b 0%, #090d15 40%, #06080f 100%);
+  --app-shell-bg: linear-gradient(160deg, #0a0f20 0%, #080b14 35%, #080914 100%);
+  --app-auth-bg:
+    radial-gradient(circle at 50% -8%, rgba(214,164,74,0.14) 0%, transparent 32%),
+    radial-gradient(circle at 8% 92%, rgba(148,163,184,0.08) 0%, transparent 24%),
+    linear-gradient(180deg, #0d1119 0%, #090c13 48%, #06080d 100%);
+  --app-grid-line: rgba(255, 255, 255, 0.015);
+  --app-text: #f1f5f9;
+  --app-text-muted: #cbd5e1;
+  --app-text-soft: #94a3b8;
+  --app-text-faint: #64748b;
+  --app-border: rgba(255, 255, 255, 0.06);
+  --app-border-strong: rgba(255, 255, 255, 0.08);
+  --app-glass-bg: rgba(10, 14, 22, 0.82);
+  --app-glass-border: rgba(255, 255, 255, 0.07);
+  --app-glass-shadow: inset 0 1px 0 rgba(255,255,255,0.035), 0 28px 60px -20px rgba(0,0,0,0.72);
+  --app-input-bg: rgba(4, 7, 13, 0.9);
+  --app-input-border: rgba(255, 255, 255, 0.07);
+  --app-panel-bg: linear-gradient(180deg, rgba(14,19,30,0.9) 0%, rgba(9,13,20,0.92) 100%);
+  --app-panel-soft-bg: rgba(255,255,255,0.03);
+  --app-panel-subtle-bg: rgba(255,255,255,0.04);
+  --app-panel-shadow: 0 20px 48px -30px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.03);
+  --app-hero-bg:
+    radial-gradient(circle at top left, rgba(245,158,11,0.15), transparent 30%),
+    radial-gradient(circle at 82% 18%, rgba(148,163,184,0.12), transparent 22%),
+    linear-gradient(180deg, rgba(18,22,33,0.96) 0%, rgba(9,11,17,0.98) 100%);
+  --app-hero-border: rgba(255,255,255,0.06);
+  --app-hero-shadow: 0 32px 70px -38px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.04);
+  --app-pool-bg:
+    radial-gradient(circle at 12% 10%, rgba(245,158,11,0.18), transparent 32%),
+    radial-gradient(circle at 88% 12%, rgba(248,250,252,0.06), transparent 26%),
+    linear-gradient(180deg, rgba(20,16,10,0.96) 0%, rgba(12,10,8,0.96) 100%);
+  --app-pool-border: rgba(245,158,11,0.16);
+  --app-pool-shadow: 0 24px 60px -28px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.04);
+  --app-navbar-bg: rgba(8, 11, 18, 0.9);
+  --app-navbar-border: rgba(255,255,255,0.06);
+  --app-accent-soft: rgba(245, 158, 11, 0.14);
+  --app-accent-strong: #fde68a;
+}
+
 @layer base {
   html {
-    color-scheme: dark;
+    color-scheme: light;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
   }
 
+  html.dark {
+    color-scheme: dark;
+  }
+
   body {
-    background:
-      radial-gradient(circle at top, rgba(214, 158, 46, 0.08), transparent 26%),
-      radial-gradient(circle at 85% 20%, rgba(120, 119, 198, 0.08), transparent 22%),
-      linear-gradient(165deg, #0c111b 0%, #090d15 40%, #06080f 100%);
-    color: #f1f5f9;
+    background: var(--app-body-bg);
+    color: var(--app-text);
     -webkit-font-smoothing: antialiased;
     font-family: var(--font-body), system-ui, sans-serif;
     letter-spacing: -0.015em;
@@ -117,6 +222,52 @@
   .animate-count-pop     { animation: countPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
   .animate-live-glow     { animation: liveGlow 2s ease-in-out infinite; }
   .animate-urgent-blink  { animation: urgentBlink 1s ease-in-out infinite; }
+
+  .app-shell { background: var(--app-shell-bg); }
+  .auth-shell { background: var(--app-auth-bg); }
+  .theme-panel {
+    background: var(--app-panel-bg);
+    border: 1px solid var(--app-border);
+    box-shadow: var(--app-panel-shadow);
+  }
+  .theme-panel-soft {
+    background: var(--app-panel-soft-bg);
+    border: 1px solid var(--app-border);
+  }
+  .theme-panel-subtle {
+    background: var(--app-panel-subtle-bg);
+    border: 1px solid var(--app-border);
+  }
+  .theme-glass {
+    background: var(--app-glass-bg);
+    border: 1px solid var(--app-glass-border);
+    box-shadow: var(--app-glass-shadow);
+    backdrop-filter: blur(24px) saturate(1.4);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  }
+  .theme-input-surface {
+    background: var(--app-input-bg);
+    border: 1px solid var(--app-input-border);
+    color: var(--app-text);
+  }
+  .theme-text { color: var(--app-text); }
+  .theme-text-muted { color: var(--app-text-muted); }
+  .theme-text-soft { color: var(--app-text-soft); }
+  .theme-text-faint { color: var(--app-text-faint); }
+  .theme-outline-button {
+    border-color: var(--app-border-strong);
+    color: var(--app-text-muted);
+    background: transparent;
+  }
+  .theme-toggle {
+    border-color: var(--app-border-strong);
+    background: var(--app-panel-soft-bg);
+    color: var(--app-text-muted);
+  }
+  .theme-toggle:hover {
+    background: var(--app-panel-subtle-bg);
+    color: var(--app-text);
+  }
 }
 
 /* ============================================================
@@ -185,3 +336,22 @@
   border-color: rgba(59, 130, 246, 0.5) !important;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.11), 0 0 20px -4px rgba(59, 130, 246, 0.18);
 }
+
+html:not(.dark) .text-white { color: var(--app-text) !important; }
+html:not(.dark) .text-slate-300,
+html:not(.dark) .text-stone-300,
+html:not(.dark) .text-stone-400 { color: var(--app-text-muted) !important; }
+html:not(.dark) .text-slate-400 { color: var(--app-text-muted) !important; }
+html:not(.dark) .text-slate-500 { color: var(--app-text-soft) !important; }
+html:not(.dark) .text-slate-600 { color: var(--app-text-soft) !important; }
+html:not(.dark) .text-slate-700,
+html:not(.dark) .text-slate-800 { color: var(--app-text-faint) !important; }
+html:not(.dark) .text-amber-200,
+html:not(.dark) .text-amber-100 { color: #92400e !important; }
+html:not(.dark) .bg-black\/10,
+html:not(.dark) .bg-black\/20 { background-color: rgba(255, 255, 255, 0.82) !important; }
+html:not(.dark) .bg-white\/3,
+html:not(.dark) .bg-white\/5 { background-color: rgba(241, 245, 249, 0.92) !important; }
+html:not(.dark) .border-white\/6,
+html:not(.dark) .border-white\/7,
+html:not(.dark) .border-white\/8 { border-color: var(--app-border) !important; }

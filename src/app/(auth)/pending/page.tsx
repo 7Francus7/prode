@@ -12,18 +12,16 @@ const BANK = env.PAYMENT_BANK;
 const AMOUNT = env.INSCRIPTION_AMOUNT?.toString() ?? "???";
 
 const GLASS: React.CSSProperties = {
-  background: "rgba(10, 14, 22, 0.82)",
-  backdropFilter: "blur(24px) saturate(1.5)",
-  WebkitBackdropFilter: "blur(24px) saturate(1.5)",
-  border: "1px solid rgba(255,255,255,0.07)",
-  boxShadow:
-    "inset 0 1px 0 rgba(255,255,255,0.035), " +
-    "0 28px 60px -20px rgba(0,0,0,0.72)",
+  background: "var(--app-glass-bg)",
+  backdropFilter: "blur(24px) saturate(1.4)",
+  WebkitBackdropFilter: "blur(24px) saturate(1.4)",
+  border: "1px solid var(--app-glass-border)",
+  boxShadow: "var(--app-glass-shadow)",
 };
 
 function DataRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-white/6 py-3">
+      <div className="flex items-center justify-between gap-4 border-b border-white/6 py-3">
       <span className="text-xs font-medium text-slate-500">{label}</span>
       <span className={`text-right text-sm font-semibold text-white ${mono ? "font-mono tracking-wider" : ""}`}>
         {value}
@@ -97,8 +95,8 @@ export default async function PendingPage() {
         <div
           className="mt-5 rounded-2xl px-4 py-4"
           style={{
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.06)",
+            background: "var(--app-panel-subtle-bg)",
+            border: "1px solid var(--app-border)",
           }}
         >
           <p className="text-xs leading-relaxed text-slate-400">

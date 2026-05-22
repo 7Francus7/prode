@@ -6,18 +6,16 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 const GLASS: React.CSSProperties = {
-  background: "rgba(10, 14, 22, 0.82)",
-  backdropFilter: "blur(24px) saturate(1.5)",
-  WebkitBackdropFilter: "blur(24px) saturate(1.5)",
-  border: "1px solid rgba(255,255,255,0.07)",
-  boxShadow:
-    "inset 0 1px 0 rgba(255,255,255,0.035), " +
-    "0 28px 60px -20px rgba(0,0,0,0.72)",
+  background: "var(--app-glass-bg)",
+  backdropFilter: "blur(24px) saturate(1.4)",
+  WebkitBackdropFilter: "blur(24px) saturate(1.4)",
+  border: "1px solid var(--app-glass-border)",
+  boxShadow: "var(--app-glass-shadow)",
 };
 
 const INPUT: React.CSSProperties = {
-  background: "rgba(4, 7, 13, 0.9)",
-  border: "1px solid rgba(255,255,255,0.07)",
+  background: "var(--app-input-bg)",
+  border: "1px solid var(--app-input-border)",
 };
 
 export default function LoginPage() {
@@ -84,7 +82,7 @@ export default function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="tu@email.com"
             required
-            className="input-premium w-full rounded-[14px] px-4 py-4 text-[15px] text-white"
+            className="input-premium w-full rounded-[14px] px-4 py-4 text-[15px] theme-text"
             style={INPUT}
           />
           <input
@@ -94,7 +92,7 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Contrasena"
             required
-            className="input-premium w-full rounded-[14px] px-4 py-4 text-[15px] text-white"
+            className="input-premium w-full rounded-[14px] px-4 py-4 text-[15px] theme-text"
             style={INPUT}
           />
 
