@@ -181,7 +181,6 @@ export default async function HomePage() {
   const rankingDisplayRanks = ranking.map((_, index) => getSharedRankByPoints(ranking, index));
   const inTopVisible = ranking.some((u) => u.id === userId);
   const pendingPredictions = Math.max(totalPredictions - resolvedPredictions, 0);
-  const userLabel = session.user.name?.split(" ")[0] ?? "Jugador";
 
   const myEntry: RankingEntry | null = userRank > 0
     ? {
@@ -226,23 +225,12 @@ export default async function HomePage() {
               >
                 Mundial 2026
               </span>
-              <span className="text-[0.68rem] uppercase tracking-[0.18em] text-slate-500">
-                Grupo entre amigos
-              </span>
             </div>
 
-            <div className="space-y-2">
-              <p className="text-sm text-stone-300">
-                {userLabel}, tu jornada arranca acá.
-              </p>
+            <div className="space-y-1">
               <h1 className="font-display text-[2.3rem] font-bold leading-[0.95] text-white sm:text-[2.8rem]">
-                Prode <span className="text-amber-200">simple</span>,
-                <br />
-                rápido y con peso real.
+                Prode <span className="text-amber-200">Mundial 2026</span>
               </h1>
-              <p className="max-w-[32rem] text-[0.94rem] leading-relaxed text-slate-400">
-                Mirá el pozo, el cierre global y tus próximos partidos sin perderte entre bloques repetidos.
-              </p>
             </div>
 
             <div className="flex flex-wrap gap-2.5">

@@ -131,7 +131,7 @@ export default function AdminUsersClient({
     <div className="space-y-6">
       <div>
         <h1 className="text-lg font-black text-white tracking-tight">Usuarios</h1>
-        <p className="text-xs mt-1" style={{ color: "rgba(148,163,184,0.45)" }}>
+        <p className="theme-text-soft text-xs mt-1">
           Gestión de pagos e inscripciones
         </p>
       </div>
@@ -144,14 +144,10 @@ export default function AdminUsersClient({
         ].map((stat) => (
           <div
             key={stat.label}
-            className="rounded-xl px-4 py-3 text-center"
-            style={{
-              background: "rgba(13,21,32,0.7)",
-              border: "1px solid rgba(255,255,255,0.06)",
-            }}
+            className="theme-panel rounded-xl px-4 py-3 text-center"
           >
             <p className="text-xl font-black text-white">{stat.value}</p>
-            <p className="text-[10px] font-medium uppercase tracking-wider mt-0.5" style={{ color: "rgba(148,163,184,0.45)" }}>
+            <p className="theme-text-soft mt-0.5 text-[10px] font-medium uppercase tracking-wider">
               {stat.label}
             </p>
           </div>
@@ -184,15 +180,9 @@ export default function AdminUsersClient({
         </div>
       )}
 
-      <div
-        className="rounded-2xl overflow-hidden"
-        style={{
-          background: "rgba(9, 14, 26, 0.75)",
-          border: "1px solid rgba(255,255,255,0.07)",
-        }}
-      >
+      <div className="theme-panel rounded-2xl overflow-hidden">
         {users.length === 0 ? (
-          <p className="text-center py-16 text-sm" style={{ color: "rgba(148,163,184,0.35)" }}>
+          <p className="theme-text-soft text-center py-16 text-sm">
             No hay usuarios registrados
           </p>
         ) : (
@@ -202,7 +192,7 @@ export default function AdminUsersClient({
                 key={user.id}
                 className="flex items-center gap-3 px-4 py-3.5"
                 style={{
-                  borderBottom: index < users.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                  borderBottom: index < users.length - 1 ? "1px solid var(--app-border)" : "none",
                 }}
               >
                 <Avatar name={user.name} email={user.email} />
@@ -225,10 +215,10 @@ export default function AdminUsersClient({
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] truncate mt-0.5" style={{ color: "rgba(148,163,184,0.45)" }}>
+                  <p className="theme-text-soft text-[11px] truncate mt-0.5">
                     {user.email}
                   </p>
-                  <p className="text-[10px] mt-0.5" style={{ color: "rgba(100,116,139,0.4)" }}>
+                  <p className="theme-text-faint text-[10px] mt-0.5">
                     {new Date(user.createdAt).toLocaleDateString("es-AR", {
                       day: "2-digit",
                       month: "short",
@@ -255,7 +245,7 @@ export default function AdminUsersClient({
         )}
       </div>
 
-      <p className="text-center text-[10px]" style={{ color: "rgba(100,116,139,0.35)" }}>
+      <p className="theme-text-faint text-center text-[10px]">
         Los cambios aplican en el próximo refresh del usuario
       </p>
     </div>

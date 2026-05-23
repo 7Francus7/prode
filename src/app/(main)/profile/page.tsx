@@ -85,10 +85,7 @@ export default async function ProfilePage() {
       </div>
 
       {/* Avatar + identity */}
-      <div
-        className="rounded-2xl border border-brand-border overflow-hidden"
-        style={{ background: "rgba(9,14,26,0.6)" }}
-      >
+      <div className="theme-panel rounded-2xl overflow-hidden">
         <div className="flex flex-col items-center gap-3 py-7">
           <div className="w-20 h-20 rounded-full bg-brand-card-2 border-2 border-brand-border flex items-center justify-center text-2xl font-black text-slate-400 overflow-hidden">
             {user.image ? (
