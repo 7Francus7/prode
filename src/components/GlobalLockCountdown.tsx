@@ -30,14 +30,11 @@ function formatParts(ms: number) {
 
 function Unit({ value, label }: { value: string; label: string }) {
   return (
-    <div className="flex flex-col items-center gap-0.5">
-      <span className="font-display text-[24px] font-bold tabular-nums leading-none tracking-[-0.05em] text-white">
+    <div className="flex min-w-[3.8rem] flex-col items-center gap-1">
+      <span className="font-display text-[28px] font-bold tabular-nums leading-none tracking-[-0.06em] text-white">
         {value}
       </span>
-      <span
-        className="text-[8px] font-semibold uppercase tracking-[0.12em]"
-        style={{ color: "rgba(100,116,139,0.55)" }}
-      >
+      <span className="theme-text-faint text-[8px] font-semibold uppercase tracking-[0.16em]">
         {label}
       </span>
     </div>
@@ -46,10 +43,7 @@ function Unit({ value, label }: { value: string; label: string }) {
 
 function Dot() {
   return (
-    <span
-      className="text-[18px] font-black self-start mt-0.5"
-      style={{ color: "rgba(100,116,139,0.3)", lineHeight: 1.2 }}
-    >
+    <span className="theme-text-faint mt-1 text-[18px] font-black leading-none opacity-60">
       :
     </span>
   );
@@ -87,23 +81,17 @@ export function GlobalLockCountdown({ variant = "home" }: Props) {
 
   if (phase === "locked") {
     return (
-      <div
-        className="flex items-center gap-3 rounded-[1.6rem] px-4 py-4"
-        style={{
-          background: "var(--app-panel-bg)",
-          border: "1px solid var(--app-border)",
-        }}
-      >
+      <div className="theme-panel flex items-center gap-3 rounded-[1.6rem] px-4 py-4">
         <div
-          className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: "rgba(255,255,255,0.05)" }}
+          className="flex h-9 w-9 items-center justify-center rounded-xl shrink-0"
+          style={{ background: "var(--app-panel-soft-bg)" }}
         >
           <svg
             width="15"
             height="15"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="rgba(148,163,184,0.5)"
+            stroke="rgba(148,163,184,0.6)"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -113,11 +101,9 @@ export function GlobalLockCountdown({ variant = "home" }: Props) {
           </svg>
         </div>
         <div>
-          <p className="text-sm font-bold" style={{ color: "rgba(148,163,184,0.7)" }}>
-            Predicciones cerradas
-          </p>
-          <p className="text-[11px]" style={{ color: "rgba(100,116,139,0.5)" }}>
-            El plazo de predicciones venció
+          <p className="theme-text text-sm font-bold">Predicciones cerradas</p>
+          <p className="theme-text-faint text-[11px]">
+            El plazo global ya vencio
           </p>
         </div>
       </div>
@@ -131,70 +117,87 @@ export function GlobalLockCountdown({ variant = "home" }: Props) {
     ? "rgba(239,68,68,0.9)"
     : isSoon
       ? "rgba(245,158,11,0.9)"
-      : "rgba(96,165,250,0.85)";
+      : "rgba(96,165,250,0.88)";
 
   const bgColor = isUrgent
-    ? "rgba(127,29,29,0.12)"
+    ? "rgba(127,29,29,0.14)"
     : isSoon
-      ? "rgba(120,53,15,0.1)"
-      : "rgba(37,99,235,0.07)";
+      ? "rgba(120,53,15,0.12)"
+      : "rgba(37,99,235,0.08)";
 
   const borderColor = isUrgent
     ? "rgba(239,68,68,0.15)"
     : isSoon
-      ? "rgba(245,158,11,0.14)"
+      ? "rgba(245,158,11,0.16)"
       : "rgba(37,99,235,0.12)";
 
   const iconColor = isUrgent
-    ? "rgba(239,68,68,0.7)"
+    ? "rgba(239,68,68,0.76)"
     : isSoon
-      ? "rgba(245,158,11,0.7)"
-      : "rgba(96,165,250,0.65)";
+      ? "rgba(245,158,11,0.76)"
+      : "rgba(96,165,250,0.72)";
 
   const headline =
     variant === "pending"
       ? isUrgent
-        ? "¡Pagá ahora! El plazo cierra en..."
-        : "Fecha límite de predicciones"
+        ? "Paga ahora: el plazo cierra en"
+        : "Fecha limite de predicciones"
       : isUrgent
-        ? "¡Últimas horas para predecir!"
-        : "Predicciones cierran en...";
+        ? "Ultimas horas para predecir"
+        : "Predicciones cierran en";
 
   return (
     <div
-      className={`rounded-[1.6rem] px-4 py-4 ${isUrgent ? "animate-urgent-blink" : ""}`}
+      className={`relative overflow-hidden rounded-[1.7rem] px-4 py-4 ${isUrgent ? "animate-urgent-blink" : ""}`}
       style={{
         background: `linear-gradient(180deg, ${bgColor} 0%, var(--app-panel-subtle-bg) 100%)`,
         border: `1px solid ${borderColor}`,
         boxShadow: "var(--app-panel-shadow)",
       }}
     >
-      <div className="flex items-center gap-2 mb-3">
-        <svg
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke={iconColor}
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <circle cx="12" cy="12" r="10" />
-          <path d="M12 6v6l4 2" />
-        </svg>
+      <div
+        className="absolute inset-x-0 top-0 h-px"
+        style={{ background: `linear-gradient(90deg, transparent 0%, ${accentColor} 50%, transparent 100%)` }}
+      />
+
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={iconColor}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 6v6l4 2" />
+          </svg>
+          <span
+            className="text-[0.68rem] font-semibold uppercase tracking-[0.18em]"
+            style={{ color: accentColor }}
+          >
+            {headline}
+          </span>
+        </div>
         <span
-          className="text-[11px] font-semibold uppercase tracking-[0.14em]"
-          style={{ color: accentColor }}
+          className="rounded-full px-2.5 py-1 text-[0.58rem] font-semibold uppercase tracking-[0.18em]"
+          style={{
+            color: accentColor,
+            background: "rgba(255,255,255,0.4)",
+            border: `1px solid ${borderColor}`,
+          }}
         >
-          {headline}
+          Cierre global
         </span>
       </div>
 
       <div className="flex items-start justify-center gap-2">
         {phase === "days" && (
           <>
-            <Unit value={String(parts.days)} label="días" />
+            <Unit value={String(parts.days)} label="dias" />
             <Dot />
             <Unit value={parts.pad(parts.hours)} label="horas" />
             <Dot />
@@ -219,14 +222,9 @@ export function GlobalLockCountdown({ variant = "home" }: Props) {
         )}
       </div>
 
-      {variant === "pending" && (
-        <p
-          className="text-center text-[10px] mt-2 font-medium"
-          style={{ color: "rgba(148,163,184,0.4)" }}
-        >
-          Pagá tu inscripción antes de que cierre el plazo
-        </p>
-      )}
+      <p className="theme-text-faint mt-4 text-center text-[0.72rem]">
+        Todos los partidos del grupo cierran al mismo tiempo.
+      </p>
     </div>
   );
 }

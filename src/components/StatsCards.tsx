@@ -12,16 +12,28 @@ interface StatsCardsProps {
 function StatCard({
   value,
   label,
+  eyebrow,
   valueClassName,
   style,
 }: {
   value: ReactNode;
   label: string;
+  eyebrow: string;
   valueClassName: string;
   style: CSSProperties;
 }) {
   return (
-    <div className="rounded-[1.35rem] px-3 py-4 text-center" style={style}>
+    <div className="relative overflow-hidden rounded-[1.45rem] border px-3 py-4 text-center" style={style}>
+      <div
+        className="absolute inset-x-0 top-0 h-px"
+        style={{
+          background:
+            "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.72) 50%, rgba(255,255,255,0) 100%)",
+        }}
+      />
+      <p className="theme-text-faint text-[0.56rem] font-semibold uppercase tracking-[0.22em]">
+        {eyebrow}
+      </p>
       <div className={valueClassName}>{value}</div>
       <p className="mt-2 text-[9px] uppercase tracking-[0.2em] text-slate-500">{label}</p>
     </div>
@@ -33,22 +45,23 @@ export default function StatsCards({ totalPoints, correctCount, rank }: StatsCar
     <div className="grid grid-cols-3 gap-2">
       <StatCard
         value={<CountUp value={totalPoints} className="font-display text-white" />}
+        eyebrow="Campana"
         label="Puntos"
-        valueClassName="font-display text-[1.8rem] font-bold leading-none text-white"
+        valueClassName="font-display mt-3 text-[1.8rem] font-bold leading-none text-white"
         style={{
-          background: "var(--app-panel-bg)",
-          border: "1px solid var(--app-border)",
+          background: "var(--app-stat-neutral-bg)",
+          border: "1px solid var(--app-stat-neutral-border)",
           boxShadow: "var(--app-panel-shadow)",
         }}
       />
       <StatCard
         value={<CountUp value={correctCount} className="font-display text-emerald-300" />}
+        eyebrow="Pulso"
         label="Aciertos"
-        valueClassName="font-display text-[1.8rem] font-bold leading-none text-emerald-300"
+        valueClassName="font-display mt-3 text-[1.8rem] font-bold leading-none text-emerald-300"
         style={{
-          background:
-            "linear-gradient(180deg, rgba(16,185,129,0.1) 0%, rgba(255,255,255,0.92) 100%)",
-          border: "1px solid rgba(16,185,129,0.12)",
+          background: "var(--app-stat-emerald-bg)",
+          border: "1px solid var(--app-stat-emerald-border)",
           boxShadow: "var(--app-panel-shadow)",
         }}
       />
@@ -59,15 +72,15 @@ export default function StatsCards({ totalPoints, correctCount, rank }: StatsCar
               #<CountUp value={rank} className="font-display text-amber-300" />
             </span>
           ) : (
-            "—"
+            "-"
           )
         }
-        label="Posición"
-        valueClassName="font-display text-[1.8rem] font-bold leading-none text-amber-300"
+        eyebrow="Ranking"
+        label="Posicion"
+        valueClassName="font-display mt-3 text-[1.8rem] font-bold leading-none text-amber-300"
         style={{
-          background:
-            "linear-gradient(180deg, rgba(245,158,11,0.1) 0%, rgba(255,255,255,0.92) 100%)",
-          border: "1px solid rgba(245,158,11,0.14)",
+          background: "var(--app-stat-amber-bg)",
+          border: "1px solid var(--app-stat-amber-border)",
           boxShadow: "var(--app-panel-shadow)",
         }}
       />

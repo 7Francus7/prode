@@ -198,7 +198,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-8 animate-fade-in">
       <section
-        className="relative overflow-hidden rounded-[2rem] border px-4 py-5 sm:px-5 sm:py-6"
+        className="relative overflow-hidden rounded-[2.15rem] border px-4 py-5 sm:px-6 sm:py-6"
         style={{
           background: "var(--app-hero-bg)",
           borderColor: "var(--app-hero-border)",
@@ -212,44 +212,99 @@ export default async function HomePage() {
               "linear-gradient(90deg, rgba(245,158,11,0) 0%, rgba(245,158,11,0.34) 50%, rgba(245,158,11,0) 100%)",
           }}
         />
+        <div
+          className="absolute -left-12 top-8 h-32 w-32 rounded-full blur-3xl"
+          style={{ background: "rgba(245,158,11,0.14)" }}
+        />
+        <div
+          className="absolute -right-12 top-6 h-36 w-36 rounded-full blur-3xl"
+          style={{ background: "rgba(59,130,246,0.14)" }}
+        />
 
-        <div className="relative space-y-5">
-          <div className="space-y-3">
+        <div className="relative space-y-6">
+          <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               <span
-                className="inline-flex items-center rounded-full px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.24em] text-amber-200/80"
+                className="inline-flex items-center rounded-full px-3.5 py-1.5 text-[0.62rem] font-semibold uppercase tracking-[0.26em]"
                 style={{
+                  color: "var(--app-accent-strong)",
                   background: "rgba(245,158,11,0.1)",
                   border: "1px solid rgba(245,158,11,0.16)",
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.45)",
                 }}
               >
                 Mundial 2026
               </span>
             </div>
 
-            <div className="space-y-1">
-              <h1 className="font-display text-[2.3rem] font-bold leading-[0.95] text-white sm:text-[2.8rem]">
-                Prode <span className="text-amber-200">Mundial 2026</span>
+            <div className="max-w-[34rem] space-y-2">
+              <h1 className="font-display text-[2.45rem] font-bold leading-[0.92] text-white sm:text-[3rem]">
+                Prode <span style={{ color: "var(--app-accent-strong)" }}>Mundial 2026</span>
               </h1>
+              <p className="theme-text-muted max-w-[30rem] text-[0.95rem] leading-relaxed sm:text-[1rem]">
+                Predici el grupo partido a partido. Sin humo ni vueltas raras: solo 3 resultados
+                posibles y 1 punto por cada acierto.
+              </p>
             </div>
 
-            <div className="flex flex-wrap gap-2.5">
+            <div className="flex flex-wrap gap-2.5 pt-1">
               <Link
                 href="/predictions"
-                className="inline-flex min-h-[44px] items-center justify-center rounded-full px-4 text-[0.84rem] font-semibold text-white"
+                className="inline-flex min-h-[48px] items-center justify-center rounded-full px-5 text-[0.88rem] font-semibold text-white transition-transform hover:-translate-y-0.5"
                 style={{
-                  background: "linear-gradient(135deg, #d6a44a 0%, #8f5c1f 100%)",
-                  boxShadow: "0 12px 24px -14px rgba(214,164,74,0.75)",
+                  background: "linear-gradient(135deg, #d6a44a 0%, #9a5f1d 100%)",
+                  boxShadow: "0 16px 28px -16px rgba(214,164,74,0.78)",
                 }}
               >
                 Ver mis predicciones
               </Link>
               <Link
                 href="/fixture"
-                className="theme-outline-button inline-flex min-h-[44px] items-center justify-center rounded-full border px-4 text-[0.84rem] font-semibold transition-colors hover:[color:var(--app-text)]"
+                className="inline-flex min-h-[48px] items-center justify-center rounded-full border px-5 text-[0.88rem] font-semibold transition-colors hover:[color:var(--app-text)]"
+                style={{
+                  background: "var(--app-panel-soft-bg)",
+                  borderColor: "var(--app-border-strong)",
+                  color: "var(--app-text-muted)",
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.42)",
+                }}
               >
                 Abrir fixture completo
               </Link>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <span
+                className="inline-flex items-center rounded-full px-3 py-1.5 text-[0.72rem] font-semibold"
+                style={{
+                  background: "var(--app-panel-soft-bg)",
+                  border: "1px solid var(--app-border)",
+                  color: "var(--app-text-muted)",
+                }}
+              >
+                {totalUsers} jugadores en carrera
+              </span>
+              <span
+                className="inline-flex items-center rounded-full px-3 py-1.5 text-[0.72rem] font-semibold"
+                style={{
+                  background: "rgba(245,158,11,0.08)",
+                  border: "1px solid rgba(245,158,11,0.16)",
+                  color: "var(--app-accent-strong)",
+                }}
+              >
+                1 punto por acierto
+              </span>
+              <span
+                className="inline-flex items-center rounded-full px-3 py-1.5 text-[0.72rem] font-semibold"
+                style={{
+                  background: session.user.isPaid ? "rgba(16,185,129,0.12)" : "rgba(245,158,11,0.1)",
+                  border: session.user.isPaid
+                    ? "1px solid rgba(16,185,129,0.16)"
+                    : "1px solid rgba(245,158,11,0.16)",
+                  color: session.user.isPaid ? "rgba(5,150,105,0.92)" : "var(--app-accent-strong)",
+                }}
+              >
+                {session.user.isPaid ? "Grupo activo" : "Pago pendiente"}
+              </span>
             </div>
           </div>
 
@@ -261,10 +316,11 @@ export default async function HomePage() {
                 <PushNotificationCard />
               ) : (
                 <div
-                  className="rounded-[1.6rem] border px-4 py-4"
+                  className="rounded-[1.7rem] border px-4 py-4"
                   style={{
-                    background: "var(--app-panel-subtle-bg)",
+                    background: "var(--app-panel-bg)",
                     borderColor: "var(--app-border)",
+                    boxShadow: "var(--app-panel-shadow)",
                   }}
                 >
                   <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-slate-500">

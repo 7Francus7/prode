@@ -11,7 +11,7 @@ export async function PoolBanner({ variant = "home" }: PoolBannerProps) {
 
   return (
     <div
-      className="relative overflow-hidden rounded-[1.75rem] px-5 py-5"
+      className="relative overflow-hidden rounded-[1.85rem] px-5 py-5 sm:px-6"
       style={{
         background: "var(--app-pool-bg)",
         border: "1px solid var(--app-pool-border)",
@@ -22,26 +22,31 @@ export async function PoolBanner({ variant = "home" }: PoolBannerProps) {
         className="absolute inset-x-5 top-0 h-px"
         style={{
           background:
-            "linear-gradient(90deg, rgba(245,158,11,0) 0%, rgba(245,158,11,0.38) 50%, rgba(245,158,11,0) 100%)",
+            "linear-gradient(90deg, rgba(245,158,11,0) 0%, rgba(245,158,11,0.42) 50%, rgba(245,158,11,0) 100%)",
         }}
       />
+      <div
+        className="absolute -left-14 top-10 h-28 w-28 rounded-full blur-3xl"
+        style={{ background: "rgba(245,158,11,0.14)" }}
+      />
 
-      <div className="relative flex items-start justify-between gap-4">
+      <div className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
-          <div className="mb-3 flex items-center gap-2">
+          <div className="mb-4 flex items-center gap-3">
             <span
-              className="inline-flex h-8 w-8 items-center justify-center rounded-xl"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-[1rem]"
               style={{
                 background: "rgba(245,158,11,0.12)",
                 border: "1px solid rgba(245,158,11,0.18)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.48)",
               }}
             >
               <svg
-                width="16"
-                height="16"
+                width="17"
+                height="17"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="rgba(252,211,77,0.92)"
+                stroke="rgba(245,158,11,0.9)"
                 strokeWidth="1.7"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -54,47 +59,55 @@ export async function PoolBanner({ variant = "home" }: PoolBannerProps) {
                 <path d="M18 2H6v7a6 6 0 0 0 12 0V2z" />
               </svg>
             </span>
+
             <div>
-              <p className="text-[0.6rem] font-semibold uppercase tracking-[0.24em] text-amber-300/70">
+              <p
+                className="text-[0.62rem] font-semibold uppercase tracking-[0.24em]"
+                style={{ color: "var(--app-accent-strong)" }}
+              >
                 {variant === "pending" ? "Sumate al pozo" : "Pozo del grupo"}
               </p>
-              <p className="text-[0.7rem] text-stone-400">
-                Premio simple, entre amigos
+              <p className="theme-text-muted text-[0.8rem]">
+                Simple, entre amigos
               </p>
             </div>
           </div>
 
-          <p className="font-display text-[2rem] font-bold leading-none tracking-[-0.06em] text-amber-200 sm:text-[2.35rem]">
+          <p
+            className="font-display text-[2.2rem] font-bold leading-none tracking-[-0.06em] sm:text-[2.55rem]"
+            style={{ color: "var(--app-accent-strong)" }}
+          >
             {formatARS(totalPool)}
           </p>
-          <p className="mt-2 text-[0.8rem] leading-relaxed text-stone-400">
+          <p className="theme-text-muted mt-2 text-[0.88rem] leading-relaxed">
             {paidUsersCount} {paidUsersCount === 1 ? "jugador confirmado" : "jugadores confirmados"} ·{" "}
             {formatARS(inscriptionAmount)} por persona
           </p>
         </div>
 
         <div
-          className="shrink-0 rounded-2xl px-3 py-2 text-right"
+          className="shrink-0 rounded-[1.25rem] px-4 py-3"
           style={{
-            background: "var(--app-panel-subtle-bg)",
+            background: "var(--app-panel-soft-bg)",
             border: "1px solid var(--app-border)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.45)",
           }}
         >
-          <p className="text-[0.6rem] font-semibold uppercase tracking-[0.18em] text-stone-500">
+          <p className="theme-text-faint text-[0.6rem] font-semibold uppercase tracking-[0.22em]">
             Estado
           </p>
-          <div className="mt-1 flex items-center justify-end gap-2">
-            <span className="relative flex h-2 w-2">
+          <div className="mt-2 flex items-center gap-2">
+            <span className="relative flex h-2.5 w-2.5">
               <span
                 className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-60"
                 style={{ background: "rgba(250,204,21,0.7)" }}
               />
               <span
-                className="relative inline-flex h-2 w-2 rounded-full"
-                style={{ background: "rgba(250,204,21,0.88)" }}
+                className="relative inline-flex h-2.5 w-2.5 rounded-full"
+                style={{ background: "rgba(250,204,21,0.9)" }}
               />
             </span>
-            <span className="text-[0.72rem] font-semibold text-amber-100">
+            <span className="text-[0.82rem] font-semibold" style={{ color: "var(--app-accent-strong)" }}>
               Abierto
             </span>
           </div>
