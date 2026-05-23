@@ -8,6 +8,49 @@ type RecalcResult = { ok: boolean; usersUpdated: number };
 type PushTestResult = { ok?: boolean; sent?: number; error?: string };
 type BroadcastResult = { sent: number; failed: number; total: number; error?: string };
 
+function StatCard({
+  eyebrow,
+  label,
+  value,
+}: {
+  eyebrow: string;
+  label: string;
+  value: string | number;
+}) {
+  return (
+    <div className="theme-panel rounded-[1.35rem] p-4">
+      <p className="theme-text-faint text-[0.56rem] font-semibold uppercase tracking-[0.22em]">
+        {eyebrow}
+      </p>
+      <p className="mt-3 font-display text-[1.8rem] font-bold leading-none text-white">{value}</p>
+      <p className="mt-2 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function ActionPanel({
+  eyebrow,
+  title,
+  description,
+  actions,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  actions: React.ReactNode;
+}) {
+  return (
+    <section className="theme-panel rounded-[1.8rem] p-4">
+      <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-slate-500">{eyebrow}</p>
+      <p className="mt-2 text-base font-semibold text-white">{title}</p>
+      <p className="theme-text-soft mt-1 text-[0.82rem] leading-relaxed">{description}</p>
+      <div className="mt-4 space-y-2.5">{actions}</div>
+    </section>
+  );
+}
+
 export default function AdminSyncPage() {
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
   const [recalcResult, setRecalcResult] = useState<RecalcResult | null>(null);
@@ -104,153 +147,208 @@ export default function AdminSyncPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.18em] text-slate-600 mb-1">Admin</p>
-        <h1 className="text-[22px] font-black text-white tracking-tight leading-none">Sync</h1>
-      </div>
+      <section
+        className="relative overflow-hidden rounded-[2rem] border px-5 py-5"
+        style={{
+          background: "var(--app-hero-bg)",
+          borderColor: "var(--app-hero-border)",
+          boxShadow: "var(--app-hero-shadow)",
+        }}
+      >
+        <div
+          className="absolute inset-x-6 top-0 h-px"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(16,185,129,0) 0%, rgba(16,185,129,0.28) 50%, rgba(16,185,129,0) 100%)",
+          }}
+        />
 
-      <div className="space-y-2.5">
-        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.14em]">
-          Sincronizar resultados
-        </p>
-        <button
-          onClick={() => runSync(false)}
-          disabled={busy}
-          className={cn(
-            "w-full py-3 rounded-xl border text-sm font-bold transition-colors",
-            "bg-brand-card border-brand-border text-white hover:bg-brand-card-2 disabled:opacity-50"
-          )}
-        >
-          {loading === "live" ? "Sincronizando..." : "Sync partidos en vivo"}
-        </button>
-        <button
-          onClick={() => runSync(true)}
-          disabled={busy}
-          className={cn(
-            "w-full py-3 rounded-xl border text-sm font-bold transition-colors",
-            "bg-amber-500/10 border-amber-800/30 text-amber-400 hover:bg-amber-500/20 disabled:opacity-50"
-          )}
-        >
-          {loading === "full" ? "Sincronizando..." : "Sync completo (todos los partidos)"}
-        </button>
-      </div>
+        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-[34rem]">
+            <p className="theme-text-faint text-[0.62rem] font-semibold uppercase tracking-[0.24em]">
+              Admin / sync
+            </p>
+            <h1 className="mt-1 font-display text-[2rem] font-bold leading-none text-white">
+              Operacion y mantenimiento
+            </h1>
+            <p className="theme-text-muted mt-2 text-[0.92rem] leading-relaxed">
+              Ejecuta sync de resultados, recalcula puntos y valida las notificaciones del grupo.
+            </p>
+          </div>
 
-      <div className="space-y-2.5">
-        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.14em]">
-          Puntos
-        </p>
-        <button
-          onClick={runRecalculate}
-          disabled={busy}
-          className={cn(
-            "w-full py-3 rounded-xl border text-sm font-bold transition-colors",
-            "bg-red-500/8 border-red-900/30 text-red-400 hover:bg-red-500/15 disabled:opacity-50"
-          )}
-        >
-          {loading === "recalc" ? "Recalculando..." : "Recalcular todos los puntos"}
-        </button>
-        <p className="text-[10px] text-slate-700 text-center">
-          Borra y recalcula PredictionPoints de todos los partidos terminados
-        </p>
-      </div>
-
-      <div className="space-y-2.5">
-        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.14em]">
-          Push Notifications
-        </p>
-        <button
-          onClick={runPushTest}
-          disabled={busy}
-          className={cn(
-            "w-full py-3 rounded-xl border text-sm font-bold transition-colors",
-            "bg-brand-card border-brand-border text-white hover:bg-brand-card-2 disabled:opacity-50"
-          )}
-        >
-          {loading === "pushtest" ? "Enviando..." : "Enviar push de prueba (a mis dispositivos)"}
-        </button>
-        <button
-          onClick={runBroadcast}
-          disabled={busy}
-          className={cn(
-            "w-full py-3 rounded-xl border text-sm font-bold transition-colors",
-            "bg-amber-500/10 border-amber-800/30 text-amber-400 hover:bg-amber-500/20 disabled:opacity-50"
-          )}
-        >
-          {loading === "broadcast" ? "Enviando..." : "Broadcast a todos los pagos"}
-        </button>
-        <p className="text-[10px] text-slate-700 text-center">
-          El broadcast requiere VAPID keys configuradas en Vercel
-        </p>
-      </div>
-
-      {error && (
-        <div className="rounded-xl p-4 bg-red-900/20 border border-red-800/30">
-          <p className="text-sm text-red-400">{error}</p>
+          <div className="grid grid-cols-3 gap-3 lg:min-w-[26rem]">
+            <StatCard eyebrow="Sync" label="Estado" value={loading === "live" || loading === "full" ? "Run" : "OK"} />
+            <StatCard eyebrow="Puntos" label="Recalc" value={loading === "recalc" ? "Run" : "Ready"} />
+            <StatCard eyebrow="Push" label="Canal" value={loading === "pushtest" || loading === "broadcast" ? "Run" : "Ready"} />
+          </div>
         </div>
-      )}
+      </section>
 
-      {syncResult && (
-        <div className="rounded-xl border border-brand-border bg-brand-card p-4 space-y-2">
-          <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Sync completado</p>
-          {[
-            { label: "Sincronizados", value: syncResult.synced },
-            { label: "Actualizados", value: syncResult.updated },
-            { label: "Puntos calculados", value: syncResult.pointsCalculated },
-          ].map((row) => (
-            <div key={row.label} className="flex justify-between text-sm">
-              <span className="text-slate-500">{row.label}</span>
-              <span className="text-white font-bold">{row.value}</span>
-            </div>
-          ))}
-          {syncResult.errors.length > 0 && (
-            <div className="pt-2 border-t border-brand-border space-y-1">
-              <p className="text-[11px] text-red-400 font-semibold">Errores ({syncResult.errors.length})</p>
-              {syncResult.errors.map((entry, index) => (
-                <p key={index} className="text-[11px] text-red-300 pl-2">{entry}</p>
+      {error ? (
+        <div
+          className="rounded-[1.2rem] px-4 py-3 text-sm"
+          style={{
+            background: "rgba(239,68,68,0.08)",
+            border: "1px solid rgba(239,68,68,0.13)",
+            color: "rgba(185,28,28,0.9)",
+          }}
+        >
+          {error}
+        </div>
+      ) : null}
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <ActionPanel
+          eyebrow="Resultados"
+          title="Sincronizar partidos"
+          description="Actualiza estados y resultados contra la fuente externa."
+          actions={
+            <>
+              <button
+                onClick={() => runSync(false)}
+                disabled={busy}
+                className={cn(
+                  "w-full rounded-full px-4 py-3 text-sm font-semibold transition-colors",
+                  "border border-blue-500/16 bg-blue-500/12 text-blue-300 hover:bg-blue-500/18 disabled:opacity-50"
+                )}
+              >
+                {loading === "live" ? "Sincronizando..." : "Sync partidos en vivo"}
+              </button>
+              <button
+                onClick={() => runSync(true)}
+                disabled={busy}
+                className={cn(
+                  "w-full rounded-full px-4 py-3 text-sm font-semibold transition-colors",
+                  "border border-amber-500/16 bg-amber-500/12 text-amber-300 hover:bg-amber-500/18 disabled:opacity-50"
+                )}
+              >
+                {loading === "full" ? "Sincronizando..." : "Sync completo"}
+              </button>
+            </>
+          }
+        />
+
+        <ActionPanel
+          eyebrow="Integridad"
+          title="Recalcular puntos"
+          description="Vuelve a generar PredictionPoints de todos los partidos terminados."
+          actions={
+            <button
+              onClick={runRecalculate}
+              disabled={busy}
+              className={cn(
+                "w-full rounded-full px-4 py-3 text-sm font-semibold transition-colors",
+                "border border-red-500/16 bg-red-500/10 text-red-300 hover:bg-red-500/16 disabled:opacity-50"
+              )}
+            >
+              {loading === "recalc" ? "Recalculando..." : "Recalcular todos los puntos"}
+            </button>
+          }
+        />
+
+        <ActionPanel
+          eyebrow="Notificaciones"
+          title="Push y broadcast"
+          description="Prueba el canal propio y luego dispara un recordatorio a jugadores pagos."
+          actions={
+            <>
+              <button
+                onClick={runPushTest}
+                disabled={busy}
+                className={cn(
+                  "w-full rounded-full px-4 py-3 text-sm font-semibold transition-colors",
+                  "border border-white/10 bg-white/6 text-white hover:bg-white/10 disabled:opacity-50"
+                )}
+              >
+                {loading === "pushtest" ? "Enviando..." : "Push de prueba"}
+              </button>
+              <button
+                onClick={runBroadcast}
+                disabled={busy}
+                className={cn(
+                  "w-full rounded-full px-4 py-3 text-sm font-semibold transition-colors",
+                  "border border-amber-500/16 bg-amber-500/12 text-amber-300 hover:bg-amber-500/18 disabled:opacity-50"
+                )}
+              >
+                {loading === "broadcast" ? "Enviando..." : "Broadcast a pagos"}
+              </button>
+            </>
+          }
+        />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        {syncResult ? (
+          <section className="theme-panel rounded-[1.8rem] p-4">
+            <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-emerald-400">Sync completado</p>
+            <div className="mt-4 space-y-3">
+              {[
+                { label: "Sincronizados", value: syncResult.synced },
+                { label: "Actualizados", value: syncResult.updated },
+                { label: "Puntos calculados", value: syncResult.pointsCalculated },
+              ].map((row) => (
+                <div key={row.label} className="flex items-center justify-between text-sm">
+                  <span className="theme-text-soft">{row.label}</span>
+                  <span className="font-semibold text-white">{row.value}</span>
+                </div>
               ))}
             </div>
-          )}
-        </div>
-      )}
+            {syncResult.errors.length > 0 ? (
+              <div className="mt-4 border-t border-brand-border pt-4">
+                <p className="text-[0.72rem] font-semibold text-red-400">Errores ({syncResult.errors.length})</p>
+                <div className="mt-2 space-y-1">
+                  {syncResult.errors.map((entry, index) => (
+                    <p key={index} className="text-[0.74rem] text-red-300">{entry}</p>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </section>
+        ) : null}
 
-      {recalcResult && (
-        <div className="rounded-xl border border-emerald-800/30 bg-emerald-900/8 p-4">
-          <p className="text-sm font-bold text-emerald-400">
-            Recalculo completado — {recalcResult.usersUpdated} usuario{recalcResult.usersUpdated !== 1 ? "s" : ""} actualizados
-          </p>
-        </div>
-      )}
+        {recalcResult ? (
+          <section className="theme-panel rounded-[1.8rem] p-4">
+            <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-emerald-400">Recalculo completado</p>
+            <p className="mt-3 text-base font-semibold text-white">
+              {recalcResult.usersUpdated} usuario{recalcResult.usersUpdated !== 1 ? "s" : ""} actualizados
+            </p>
+            <p className="theme-text-soft mt-2 text-sm">
+              Los puntos quedaron alineados con los resultados ya cerrados.
+            </p>
+          </section>
+        ) : null}
 
-      {pushTestResult && (
-        <div className={cn(
-          "rounded-xl border p-4",
-          pushTestResult.ok
-            ? "border-emerald-800/30 bg-emerald-900/8"
-            : "border-red-800/30 bg-red-900/10"
-        )}>
-          <p className={cn("text-sm font-bold", pushTestResult.ok ? "text-emerald-400" : "text-red-400")}>
-            {pushTestResult.ok
-              ? `Push enviado correctamente${pushTestResult.sent ? ` (${pushTestResult.sent})` : ""}`
-              : (pushTestResult.error ?? "Error desconocido")}
-          </p>
-        </div>
-      )}
+        {pushTestResult ? (
+          <section className="theme-panel rounded-[1.8rem] p-4">
+            <p className={cn("text-[0.62rem] font-semibold uppercase tracking-[0.22em]", pushTestResult.ok ? "text-emerald-400" : "text-red-400")}>
+              Push de prueba
+            </p>
+            <p className="mt-3 text-base font-semibold text-white">
+              {pushTestResult.ok
+                ? `Push enviado correctamente${pushTestResult.sent ? ` (${pushTestResult.sent})` : ""}`
+                : pushTestResult.error ?? "Error desconocido"}
+            </p>
+          </section>
+        ) : null}
 
-      {broadcastResult && (
-        <div className="rounded-xl border border-brand-border bg-brand-card p-4 space-y-2">
-          <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Broadcast completado</p>
-          {[
-            { label: "Enviados", value: broadcastResult.sent },
-            { label: "Fallidos", value: broadcastResult.failed },
-            { label: "Total pagos", value: broadcastResult.total },
-          ].map((row) => (
-            <div key={row.label} className="flex justify-between text-sm">
-              <span className="text-slate-500">{row.label}</span>
-              <span className="text-white font-bold">{row.value}</span>
+        {broadcastResult ? (
+          <section className="theme-panel rounded-[1.8rem] p-4">
+            <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-emerald-400">Broadcast completado</p>
+            <div className="mt-4 space-y-3">
+              {[
+                { label: "Enviados", value: broadcastResult.sent },
+                { label: "Fallidos", value: broadcastResult.failed },
+                { label: "Total pagos", value: broadcastResult.total },
+              ].map((row) => (
+                <div key={row.label} className="flex items-center justify-between text-sm">
+                  <span className="theme-text-soft">{row.label}</span>
+                  <span className="font-semibold text-white">{row.value}</span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
+          </section>
+        ) : null}
+      </div>
     </div>
   );
 }
