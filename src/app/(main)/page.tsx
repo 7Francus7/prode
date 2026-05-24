@@ -237,15 +237,13 @@ export default async function HomePage() {
               </span>
             </div>
 
-            <div className="max-w-[34rem] space-y-2">
+            <div className="max-w-[34rem]">
               <h1 className="font-display text-[2.45rem] font-bold leading-[0.92] text-white sm:text-[3rem]">
                 Prode <span style={{ color: "var(--app-accent-strong)" }}>Mundial 2026</span>
               </h1>
-              <p className="theme-text-muted max-w-[30rem] text-[0.95rem] leading-relaxed sm:text-[1rem]">
-                Predici el grupo partido a partido. Sin humo ni vueltas raras: solo 3 resultados
-                posibles y 1 punto por cada acierto.
-              </p>
             </div>
+
+            <PoolBanner />
 
             <div className="flex flex-wrap gap-2.5 pt-1">
               <Link
@@ -308,35 +306,32 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="grid gap-3">
-            <PoolBanner />
-            <div className="grid gap-3 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-              <GlobalLockCountdown />
-              {session.user.isPaid ? (
-                <PushNotificationCard />
-              ) : (
-                <div
-                  className="rounded-[1.7rem] border px-4 py-4"
-                  style={{
-                    background: "var(--app-panel-bg)",
-                    borderColor: "var(--app-border)",
-                    boxShadow: "var(--app-panel-shadow)",
-                  }}
-                >
-                  <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                    Estado de juego
-                  </p>
-                  <p className="mt-2 text-[1.1rem] font-semibold text-white">
-                    {pendingPredictions > 0
-                      ? `${pendingPredictions} pendientes por resolver`
-                      : "Todas tus predicciones están al día"}
-                  </p>
-                  <p className="mt-1 text-[0.82rem] leading-relaxed text-slate-400">
-                    Cuando se resuelvan los partidos, tu efectividad y tu posición se actualizan automáticamente.
-                  </p>
-                </div>
-              )}
-            </div>
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+            <GlobalLockCountdown />
+            {session.user.isPaid ? (
+              <PushNotificationCard />
+            ) : (
+              <div
+                className="rounded-[1.7rem] border px-4 py-4"
+                style={{
+                  background: "var(--app-panel-bg)",
+                  borderColor: "var(--app-border)",
+                  boxShadow: "var(--app-panel-shadow)",
+                }}
+              >
+                <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  Estado de juego
+                </p>
+                <p className="mt-2 text-[1.1rem] font-semibold text-white">
+                  {pendingPredictions > 0
+                    ? `${pendingPredictions} pendientes por resolver`
+                    : "Todas tus predicciones están al día"}
+                </p>
+                <p className="mt-1 text-[0.82rem] leading-relaxed text-slate-400">
+                  Cuando se resuelvan los partidos, tu efectividad y tu posición se actualizan automáticamente.
+                </p>
+              </div>
+            )}
           </div>
 
           <div>
