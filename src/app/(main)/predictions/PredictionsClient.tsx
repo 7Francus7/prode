@@ -60,7 +60,7 @@ export default function PredictionsClient({
   );
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="space-y-5">
       <div className="pt-2">
         <p className="text-[10px] uppercase tracking-[0.18em] text-slate-600 mb-1">Mi historial</p>
         <h1 className="text-[22px] font-black text-white tracking-tight leading-none">Predicciones</h1>

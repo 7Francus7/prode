@@ -76,7 +76,7 @@ export default async function ProfilePage() {
   }).format(new Date(user.createdAt));
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="space-y-5">
 
       {/* Title */}
       <div className="pt-2">

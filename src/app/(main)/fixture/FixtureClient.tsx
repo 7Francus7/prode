@@ -85,7 +85,7 @@ export default function FixtureClient({
   }, [activeGroup, initialGroup]);
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="space-y-5">
       <section
         className="rounded-[1.9rem] border px-4 py-5"
         style={{

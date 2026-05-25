@@ -55,6 +55,16 @@
     0%, 100% { opacity: 1; }
     50%       { opacity: 0.6; }
   }
+
+  @keyframes pageEnter {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @keyframes navIndicator {
+    from { opacity: 0; transform: translateX(-50%) scaleX(0.35); }
+    to   { opacity: 1; transform: translateX(-50%) scaleX(1); }
+  }
 }
 
 :root {
@@ -214,6 +224,8 @@ html.dark {
 
   .animate-fade-in { animation: fadeIn 0.25s ease-out both; }
   .animate-slide-up { animation: slideUp 0.3s ease-out both; }
+  .animate-page-enter { animation: pageEnter 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .animate-nav-indicator { animation: navIndicator 0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
   .skeleton {
     background: linear-gradient(
@@ -367,3 +379,12 @@ html:not(.dark) .bg-white\/5 { background-color: rgba(241, 245, 249, 0.92) !impo
 html:not(.dark) .border-white\/6,
 html:not(.dark) .border-white\/7,
 html:not(.dark) .border-white\/8 { border-color: var(--app-border) !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-page-enter,
+  .animate-nav-indicator,
+  .animate-fade-in,
+  .animate-slide-up {
+    animation: none !important;
+  }
+}

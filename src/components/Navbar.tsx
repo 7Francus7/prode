@@ -164,14 +164,14 @@ export default function Navbar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "relative flex min-h-[64px] flex-col items-center justify-center gap-1 pt-2 pb-2 transition-colors",
+                  "relative flex min-h-[64px] flex-col items-center justify-center gap-1 pt-2 pb-2 transition duration-200 active:scale-[0.94]",
                   active ? "text-amber-200" : "text-slate-600"
                 )}
                 style={active ? { background: "rgba(214,164,74,0.05)" } : {}}
               >
                 {active && (
                   <span
-                    className="absolute top-0 left-1/2 h-[2px] w-8 -translate-x-1/2 rounded-full"
+                    className="absolute top-0 left-1/2 h-[2px] w-8 -translate-x-1/2 rounded-full animate-nav-indicator"
                     style={{
                       background:
                         "linear-gradient(90deg, rgba(214,164,74,0) 0%, rgba(214,164,74,1) 50%, rgba(214,164,74,0) 100%)",

@@ -40,7 +40,7 @@ export default async function RankingPage() {
   const myEntry = ranking.find((e) => e.id === session?.user.id);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
 
       {/* Sticky my-position banner */}
       {myEntry && <MyPositionBanner entry={myEntry} total={ranking.length} />}

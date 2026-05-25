@@ -196,7 +196,7 @@ export default async function HomePage() {
     : null;
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8">
       <section
         className="relative overflow-hidden rounded-[2.15rem] border px-4 py-5 sm:px-6 sm:py-6"
         style={{
