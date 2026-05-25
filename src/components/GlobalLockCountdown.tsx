@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getGlobalLockDateISO } from "@/lib/utils";
 
 interface Props {
   variant?: "home" | "pending";
@@ -50,14 +51,12 @@ function Dot() {
 }
 
 export function GlobalLockCountdown({ variant = "home" }: Props) {
-  const lockDateISO = process.env.NEXT_PUBLIC_LOCK_DATE;
+  const lockDateISO = getGlobalLockDateISO();
   const router = useRouter();
   const refreshedRef = useRef(false);
   const [ms, setMs] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!lockDateISO) return;
-
     const target = new Date(lockDateISO).getTime();
 
     const update = () => {
@@ -74,7 +73,7 @@ export function GlobalLockCountdown({ variant = "home" }: Props) {
     return () => clearInterval(id);
   }, [lockDateISO, router]);
 
-  if (!lockDateISO || ms === null) return null;
+  if (ms === null) return null;
 
   const phase = getPhase(ms);
   const parts = formatParts(Math.max(ms, 0));
@@ -223,7 +222,7 @@ export function GlobalLockCountdown({ variant = "home" }: Props) {
       </div>
 
       <p className="theme-text-faint mt-4 text-center text-[0.72rem]">
-        Todos los partidos del grupo cierran al mismo tiempo.
+        Todas las predicciones cierran 1 h antes del primer partido del Mundial.
       </p>
     </div>
   );

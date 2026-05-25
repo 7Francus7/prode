@@ -32,7 +32,6 @@ const schema = z.object({
   PAYMENT_BANK: z.string().default("Banco"),
 
   // Public vars - also readable server-side
-  NEXT_PUBLIC_LOCK_DATE: z.string().optional(),
   NEXT_PUBLIC_VAPID_PUBLIC_KEY: z.string().optional(),
 });
 

@@ -11,15 +11,21 @@ export function isMatchLocked(matchDate: Date | string): boolean {
   return new Date() >= new Date(matchDate);
 }
 
-// Global prediction lock — reads NEXT_PUBLIC_LOCK_DATE (accessible server + client)
+// First match of the World Cup 2026 (opener): 11 Jun 2026, 19:00 UTC.
+const WORLD_CUP_FIRST_MATCH_ISO = "2026-06-11T19:00:00Z";
+
+// All predictions close 1 hour before the first match. After this moment no
+// prediction can be created or changed — every match locks at the same time.
+export const GLOBAL_LOCK_ISO = new Date(
+  new Date(WORLD_CUP_FIRST_MATCH_ISO).getTime() - 60 * 60 * 1000,
+).toISOString();
+
 export function isGlobalPredictionLocked(): boolean {
-  const lockDate = process.env.NEXT_PUBLIC_LOCK_DATE;
-  if (!lockDate) return false;
-  return new Date() >= new Date(lockDate);
+  return new Date() >= new Date(GLOBAL_LOCK_ISO);
 }
 
-export function getGlobalLockDateISO(): string | null {
-  return process.env.NEXT_PUBLIC_LOCK_DATE ?? null;
+export function getGlobalLockDateISO(): string {
+  return GLOBAL_LOCK_ISO;
 }
 
 export function formatMatchDate(date: Date | string): string {
