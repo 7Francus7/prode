@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Solo se puede predecir la fase de grupos" }, { status: 403 });
   }
 
-  if (isMatchLocked(match.matchDate)) {
+  if (isMatchLocked(match.matchDate) && !session.user.isAdmin) {
     return NextResponse.json({ error: "El partido ya comenzó" }, { status: 403 });
   }
 
