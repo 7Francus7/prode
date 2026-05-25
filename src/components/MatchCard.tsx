@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { cn, formatMatchDate, getFlagEmoji, isMatchLocked } from "@/lib/utils";
+import { cn, formatMatchDate, getFlagEmoji, getGlobalLockDateISO, isMatchLocked } from "@/lib/utils";
 import Countdown from "./Countdown";
 import StatusBadge from "./StatusBadge";
 import PredictionButton from "./PredictionButton";
@@ -66,9 +66,10 @@ export default function MatchCard({
   const [showPicks, setShowPicks] = useState(false);
   const [picks, setPicks] = useState<PickEntry[] | null>(null);
   const [picksLoading, setPicksLoading] = useState(false);
-  const [perMatchLocked, setPerMatchLocked] = useState(() => isMatchLocked(match.matchDate));
+  const [predictionsClosed, setPredictionsClosed] = useState(globalLocked);
 
-  const locked = perMatchLocked || globalLocked;
+  const lockDateISO = getGlobalLockDateISO();
+  const matchStarted = isMatchLocked(match.matchDate);
   const finished = match.status === "FINISHED";
   const isLive = match.status === "LIVE";
   const winner = match.winner as PredictionResult | null;
@@ -76,7 +77,7 @@ export default function MatchCard({
 
   const predict = useCallback(
     async (value: PredictionResult) => {
-      if (locked || !isAuthenticated || loading) return;
+      if (predictionsClosed || !isAuthenticated || loading) return;
 
       setLoading(value);
       setPredError(null);
@@ -111,7 +112,7 @@ export default function MatchCard({
         setLoading(null);
       }
     },
-    [locked, isAuthenticated, loading, match.id, onPredictionSuccess]
+    [predictionsClosed, isAuthenticated, loading, match.id, onPredictionSuccess]
   );
 
   const togglePicks = useCallback(async () => {
@@ -236,18 +237,18 @@ export default function MatchCard({
               </p>
             ) : (
               <>
-                {!locked && (
+                {!predictionsClosed && (
                   <div className="mb-2">
-                    <Countdown matchDate={match.matchDate} onLock={() => setPerMatchLocked(true)} />
+                    <Countdown targetDate={lockDateISO} onLock={() => setPredictionsClosed(true)} />
                   </div>
                 )}
-                {locked && !finished && !myPrediction ? (
+                {predictionsClosed && !finished && !myPrediction ? (
                   <p className="text-center text-[11px] text-slate-700 py-1 flex items-center justify-center gap-1.5">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="11" width="18" height="11" rx="2" />
                       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                     </svg>
-                    {globalLocked && !perMatchLocked ? "Predicciones cerradas" : "Predicción cerrada"}
+                    Predicciones cerradas
                   </p>
                 ) : (
                   <>
@@ -260,7 +261,7 @@ export default function MatchCard({
                           selected={myPrediction === value}
                           correct={finished && winner === value ? true : undefined}
                           wrong={finished && myPrediction === value && winner !== value ? true : undefined}
-                          disabled={locked || !isAuthenticated}
+                          disabled={predictionsClosed || !isAuthenticated}
                           loading={loading === value}
                           onClick={() => predict(value)}
                         />
@@ -279,7 +280,7 @@ export default function MatchCard({
         </div>
       )}
 
-      {isGroupStage && locked && isAuthenticated && (
+      {isGroupStage && matchStarted && isAuthenticated && (
         <div className="border-t border-brand-border">
           <button
             onClick={togglePicks}

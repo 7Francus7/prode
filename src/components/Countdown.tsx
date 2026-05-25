@@ -24,12 +24,12 @@ function formatDiff(ms: number): { text: string; urgency: Urgency } | null {
 }
 
 interface CountdownProps {
-  matchDate: Date | string;
+  targetDate: Date | string;
   onLock?: () => void;
 }
 
-export default function Countdown({ matchDate, onLock }: CountdownProps) {
-  const target = new Date(matchDate).getTime();
+export default function Countdown({ targetDate, onLock }: CountdownProps) {
+  const target = new Date(targetDate).getTime();
   const [diff, setDiff] = useState(() => target - Date.now());
   const lockedRef = useRef(false);
 
