@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import type { MatchStatus } from "@prisma/client";
 
 const AR_TZ = "America/Argentina/Buenos_Aires";
 
@@ -7,7 +8,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function isMatchLocked(matchDate: Date | string): boolean {
+export function isMatchLocked(matchDate: Date | string, status?: MatchStatus): boolean {
+  if (status === "LIVE" || status === "FINISHED") {
+    return true;
+  }
+
   return new Date() >= new Date(matchDate);
 }
 
