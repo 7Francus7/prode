@@ -298,6 +298,21 @@ async function main() {
     const predictions = Array.isArray(predictionList.json) ? predictionList.json : [];
     assert(predictions.some((entry) => (entry as { matchId?: string }).matchId === match.id), "Saved prediction missing from API");
 
+    console.log("Locking predictions when match turns live");
+    const live = await admin.patch(`/api/admin/matches/${match.id}`, {
+      status: "LIVE",
+    });
+    assert(live.response.status === 200, `Admin live update failed: ${live.response.status}`);
+
+    const livePredictionEdit = await unpaid.post("/api/predictions", {
+      matchId: match.id,
+      prediction: "AWAY",
+    });
+    assert(livePredictionEdit.response.status === 403, `Live match prediction should be blocked: ${livePredictionEdit.response.status}`);
+
+    const livePicks = await unpaid.get(`/api/matches/${match.id}/picks`);
+    assert(livePicks.response.status === 200, `Live match picks should load: ${livePicks.response.status}`);
+
     console.log("Finishing match from admin");
     const finished = await admin.patch(`/api/admin/matches/${match.id}`, {
       homeScore: 2,
