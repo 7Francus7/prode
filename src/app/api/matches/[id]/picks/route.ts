@@ -25,7 +25,7 @@ export async function GET(
     return NextResponse.json({ error: "Partido sin predicciones" }, { status: 404 });
   }
 
-  if (!isMatchLocked(match.matchDate)) {
+  if (!isMatchLocked(match.matchDate, match.status)) {
     return NextResponse.json({ error: "Partido no bloqueado aún" }, { status: 403 });
   }
 

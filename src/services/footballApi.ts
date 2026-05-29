@@ -21,6 +21,7 @@ export interface FootballApiProvider {
 
 export class ApiFootballProvider implements FootballApiProvider {
   private readonly baseUrl = "https://v3.football.api-sports.io";
+  private readonly syncWindowDays = { from: -1, to: 1 };
 
   constructor(private apiKey: string) {}
 
@@ -49,11 +50,18 @@ export class ApiFootballProvider implements FootballApiProvider {
   }
 
   async getTodayMatches(): Promise<ExternalMatch[]> {
-    const today = new Date().toISOString().split("T")[0];
+    const from = this.formatDateOffset(this.syncWindowDays.from);
+    const to = this.formatDateOffset(this.syncWindowDays.to);
     const data = await this.fetch<{ response: ApiFixture[] }>(
-      `/fixtures?league=1&season=2026&from=${today}&to=${today}`
+      `/fixtures?league=1&season=2026&from=${from}&to=${to}`
     );
     return data.response.map(mapFixture);
+  }
+
+  private formatDateOffset(offsetDays: number): string {
+    const date = new Date();
+    date.setUTCDate(date.getUTCDate() + offsetDays);
+    return date.toISOString().split("T")[0];
   }
 }
 

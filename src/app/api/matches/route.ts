@@ -43,7 +43,7 @@ export async function GET(request: Request) {
       const mWithPreds = m as MatchWithPreds;
       return {
         ...m,
-        isLocked: isMatchLocked(m.matchDate),
+        isLocked: isMatchLocked(m.matchDate, m.status),
         myPrediction: mWithPreds.predictions?.[0]?.prediction ?? null,
         predictions: undefined,
       };

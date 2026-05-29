@@ -16,7 +16,7 @@ function toMatchWithTeams(
 
   return {
     ...match,
-    isLocked: isMatchLocked(match.matchDate),
+    isLocked: isMatchLocked(match.matchDate, match.status),
     myPrediction: prediction ? (prediction.prediction as PredictionResult) : null,
   } as MatchWithTeams;
 }
