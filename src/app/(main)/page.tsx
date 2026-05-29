@@ -8,6 +8,7 @@ import MyPositionBanner from "@/components/MyPositionBanner";
 import { PoolBanner } from "@/components/PoolBanner";
 import { GlobalLockCountdown } from "@/components/GlobalLockCountdown";
 import PushNotificationCard from "@/components/PushNotificationCard";
+import ShareGroupCard from "@/components/ShareGroupCard";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
@@ -24,6 +25,8 @@ async function getHomeData(userId: string) {
     totalPredictions,
     resolvedPredictions,
     totalUsers,
+    openMatchesCount,
+    openPredictionsCount,
   ] = await Promise.all([
     prisma.match.findMany({
       where: { status: "LIVE", groupId: { not: null } },
@@ -57,6 +60,23 @@ async function getHomeData(userId: string) {
     prisma.prediction.count({ where: { userId } }),
     prisma.predictionPoints.count({ where: { userId } }),
     prisma.user.count({ where: { isAdmin: false } }),
+    prisma.match.count({
+      where: {
+        status: "SCHEDULED",
+        groupId: { not: null },
+        matchDate: { gt: new Date() },
+      },
+    }),
+    prisma.prediction.count({
+      where: {
+        userId,
+        match: {
+          status: "SCHEDULED",
+          groupId: { not: null },
+          matchDate: { gt: new Date() },
+        },
+      },
+    }),
   ]);
 
   const totalPoints = userRecord?.totalPoints ?? 0;
@@ -76,6 +96,8 @@ async function getHomeData(userId: string) {
     totalPredictions,
     resolvedPredictions,
     totalUsers,
+    openMatchesCount,
+    openPredictionsCount,
   };
 }
 
@@ -85,7 +107,7 @@ function toMatchWithTeams(
   const pred = m.predictions[0];
   return {
     ...m,
-    isLocked: isMatchLocked(m.matchDate),
+    isLocked: isMatchLocked(m.matchDate, m.status),
     myPrediction: pred ? (pred.prediction as PredictionResult) : null,
   } as MatchWithTeams;
 }
@@ -175,12 +197,15 @@ export default async function HomePage() {
     totalPredictions,
     resolvedPredictions,
     totalUsers,
+    openMatchesCount,
+    openPredictionsCount,
   } = homeData;
 
   const globalLocked = isGlobalPredictionLocked();
   const rankingDisplayRanks = ranking.map((_, index) => getSharedRankByPoints(ranking, index));
   const inTopVisible = ranking.some((u) => u.id === userId);
   const pendingPredictions = Math.max(totalPredictions - resolvedPredictions, 0);
+  const missingOpenPredictions = Math.max(openMatchesCount - openPredictionsCount, 0);
 
   const myEntry: RankingEntry | null = userRank > 0
     ? {
@@ -306,32 +331,37 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-            <GlobalLockCountdown />
-            {session.user.isPaid ? (
-              <PushNotificationCard />
-            ) : (
-              <div
-                className="rounded-[1.7rem] border px-4 py-4"
-                style={{
-                  background: "var(--app-panel-bg)",
-                  borderColor: "var(--app-border)",
-                  boxShadow: "var(--app-panel-shadow)",
-                }}
-              >
-                <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                  Estado de juego
-                </p>
-                <p className="mt-2 text-[1.1rem] font-semibold text-white">
-                  {pendingPredictions > 0
-                    ? `${pendingPredictions} pendientes por resolver`
-                    : "Todas tus predicciones están al día"}
-                </p>
-                <p className="mt-1 text-[0.82rem] leading-relaxed text-slate-400">
-                  Cuando se resuelvan los partidos, tu efectividad y tu posición se actualizan automáticamente.
-                </p>
+          <div className="grid gap-3">
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+              <GlobalLockCountdown />
+              <div className="grid gap-3">
+                {session.user.isPaid ? (
+                  <PushNotificationCard />
+                ) : (
+                <div
+                  className="rounded-[1.7rem] border px-4 py-4"
+                  style={{
+                    background: "var(--app-panel-bg)",
+                    borderColor: "var(--app-border)",
+                    boxShadow: "var(--app-panel-shadow)",
+                  }}
+                >
+                  <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                    Estado de juego
+                  </p>
+                  <p className="mt-2 text-[1.1rem] font-semibold text-white">
+                    {pendingPredictions > 0
+                      ? `${pendingPredictions} pendientes por resolver`
+                      : "Todas tus predicciones están al día"}
+                  </p>
+                  <p className="mt-1 text-[0.82rem] leading-relaxed text-slate-400">
+                    Cuando se resuelvan los partidos, tu efectividad y tu posición se actualizan automáticamente.
+                  </p>
+                </div>
+                )}
+                <ShareGroupCard />
               </div>
-            )}
+            </div>
           </div>
 
           <div>
@@ -339,6 +369,44 @@ export default async function HomePage() {
               Tu campaña
             </p>
             <StatsCards totalPoints={totalPoints} correctCount={correctCount} rank={userRank} />
+          </div>
+
+          <div
+            className="rounded-[1.7rem] border px-4 py-4"
+            style={{
+              background: "var(--app-panel-bg)",
+              borderColor: "var(--app-border)",
+              boxShadow: "var(--app-panel-shadow)",
+            }}
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  Antes del cierre
+                </p>
+                <p className="mt-2 text-[1.1rem] font-semibold text-white">
+                  {missingOpenPredictions > 0
+                    ? `Te faltan ${missingOpenPredictions} picks por cargar`
+                    : "Ya dejaste cargados todos los picks abiertos"}
+                </p>
+                <p className="mt-1 text-[0.82rem] leading-relaxed text-slate-400">
+                  {openMatchesCount > 0
+                    ? `${openPredictionsCount} de ${openMatchesCount} partidos futuros ya tienen tu prediccion.`
+                    : "Todavia no hay partidos abiertos para completar."}
+                </p>
+              </div>
+              <Link
+                href="/fixture"
+                className="inline-flex min-h-[44px] items-center justify-center rounded-full border px-4 text-[0.82rem] font-semibold transition-colors hover:[color:var(--app-text)]"
+                style={{
+                  background: "var(--app-panel-soft-bg)",
+                  borderColor: "var(--app-border-strong)",
+                  color: "var(--app-text-muted)",
+                }}
+              >
+                Completar fixture
+              </Link>
+            </div>
           </div>
         </div>
       </section>
