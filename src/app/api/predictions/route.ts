@@ -17,6 +17,9 @@ export async function POST(request: Request) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
+  if (session.user.isBlocked) {
+    return NextResponse.json({ error: "Cuenta bloqueada" }, { status: 403 });
+  }
 
   // Payment gate — admins bypass
   if (!session.user.isPaid && !session.user.isAdmin) {
@@ -61,6 +64,9 @@ export async function GET(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+  if (session.user.isBlocked) {
+    return NextResponse.json({ error: "Cuenta bloqueada" }, { status: 403 });
   }
 
   const { searchParams } = new URL(request.url);

@@ -13,7 +13,7 @@ const broadcastSchema = z.object({
 
 export async function POST(req: Request) {
   const session = await auth();
-  if (!session?.user?.isAdmin) {
+  if (!session?.user?.isAdmin || session.user.isBlocked) {
     return NextResponse.json({ error: "Sin permisos" }, { status: 403 });
   }
 
@@ -38,9 +38,9 @@ export async function POST(req: Request) {
   const url = parsed.data.url ?? "/";
 
   const subs = await prisma.pushSubscription.findMany({
-    include: { user: { select: { isPaid: true } } },
+    include: { user: { select: { isPaid: true, isBlocked: true } } },
   });
-  const paidSubs = subs.filter((subscription) => subscription.user.isPaid);
+  const paidSubs = subs.filter((subscription) => subscription.user.isPaid && !subscription.user.isBlocked);
 
   let sent = 0;
   let failed = 0;

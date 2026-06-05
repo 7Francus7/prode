@@ -16,6 +16,9 @@ export async function POST(req: Request) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
+  if (session.user.isBlocked) {
+    return NextResponse.json({ error: "Cuenta bloqueada" }, { status: 403 });
+  }
   if (!session.user.isPaid) {
     return NextResponse.json({ error: "Pago requerido" }, { status: 403 });
   }

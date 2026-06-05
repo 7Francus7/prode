@@ -8,7 +8,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session?.user?.isAdmin) {
+  if (!session?.user?.isAdmin || session.user.isBlocked) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
@@ -25,6 +25,19 @@ export async function PATCH(
   }
 
   try {
+    const target = await prisma.user.findUnique({
+      where: { id },
+      select: { isAdmin: true },
+    });
+
+    if (!target) {
+      return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+    }
+
+    if (target.isAdmin && !session.user.isSuperAdmin) {
+      return NextResponse.json({ error: "Solo un super admin puede modificar admins" }, { status: 403 });
+    }
+
     const user = await prisma.user.update({
       where: { id },
       data: { isPaid },

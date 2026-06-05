@@ -7,6 +7,17 @@ export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = !!req.auth?.user;
   const isAdmin = req.auth?.user?.isAdmin ?? false;
+  const isBlocked = req.auth?.user?.isBlocked ?? false;
+
+  if (pathname === "/blocked") {
+    if (!isLoggedIn) return NextResponse.redirect(new URL("/login", req.url));
+    if (!isBlocked) return NextResponse.redirect(new URL("/", req.url));
+    return NextResponse.next();
+  }
+
+  if (isLoggedIn && isBlocked) {
+    return NextResponse.redirect(new URL("/blocked", req.url));
+  }
 
   // ── Admin pages ───────────────────────────────────────────────
   if (pathname.startsWith("/admin")) {

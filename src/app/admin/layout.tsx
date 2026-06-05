@@ -11,6 +11,7 @@ const adminLinks = [
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
+  if (session?.user?.isBlocked) redirect("/blocked");
   if (!session?.user?.isAdmin) redirect("/");
 
   return (

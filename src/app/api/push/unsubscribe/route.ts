@@ -12,6 +12,9 @@ export async function DELETE(req: Request) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
+  if (session.user.isBlocked) {
+    return NextResponse.json({ error: "Cuenta bloqueada" }, { status: 403 });
+  }
 
   const body = await req.json().catch(() => null);
   const parsed = unsubscribeSchema.safeParse(body);

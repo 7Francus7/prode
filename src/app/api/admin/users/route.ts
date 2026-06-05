@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   const session = await auth();
-  if (!session?.user?.isAdmin) {
+  if (!session?.user?.isAdmin || session.user.isBlocked) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
@@ -15,8 +15,12 @@ export async function GET() {
       email: true,
       isPaid: true,
       isAdmin: true,
+      isSuperAdmin: true,
+      isBlocked: true,
+      totalPoints: true,
       createdAt: true,
-      _count: { select: { predictions: true } },
+      updatedAt: true,
+      _count: { select: { predictions: true, predictionPoints: true } },
     },
     orderBy: { createdAt: "desc" },
   });

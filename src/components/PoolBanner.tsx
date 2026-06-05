@@ -5,9 +5,17 @@ interface PoolBannerProps {
 }
 
 export async function PoolBanner({ variant = "home" }: PoolBannerProps) {
-  const { paidUsersCount, inscriptionAmount, totalPool } = await getPoolStats();
+  const { paidUsersCount, inscriptionAmount, totalPool, firstPlaceCount, prizePerWinner } = await getPoolStats();
 
   if (inscriptionAmount === 0) return null;
+
+  const hasTie = firstPlaceCount > 1;
+  const prizeLabel =
+    firstPlaceCount === 0
+      ? "Sin puntero todavia"
+      : hasTie
+        ? `${firstPlaceCount} punteros - ${formatARS(prizePerWinner)} cada uno`
+        : `${formatARS(totalPool)} para el puntero`;
 
   return (
     <div
@@ -83,6 +91,25 @@ export async function PoolBanner({ variant = "home" }: PoolBannerProps) {
             {paidUsersCount} {paidUsersCount === 1 ? "jugador confirmado" : "jugadores confirmados"} ·{" "}
             {formatARS(inscriptionAmount)} por persona
           </p>
+          <div
+            className="mt-4 rounded-[1.15rem] px-4 py-3"
+            style={{
+              background: "var(--app-panel-soft-bg)",
+              border: "1px solid var(--app-border)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.38)",
+            }}
+          >
+            <p className="theme-text-faint text-[0.58rem] font-semibold uppercase tracking-[0.2em]">
+              Premio
+            </p>
+            <p className="mt-1 text-[0.86rem] font-semibold text-white">
+              100% al 1er puesto
+            </p>
+            <p className="theme-text-soft mt-1 text-[0.78rem] leading-relaxed">
+              {hasTie ? "Empate en la punta: " : "Si cerrara hoy: "}
+              {prizeLabel}
+            </p>
+          </div>
         </div>
 
         <div

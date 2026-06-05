@@ -98,16 +98,17 @@ async function getAdminData(adminId: string) {
       select: {
         name: true,
         email: true,
+        isSuperAdmin: true,
         createdAt: true,
         totalPoints: true,
         _count: { select: { predictions: true, predictionPoints: { where: { correct: true } } } },
       },
     }),
     prisma.$transaction([
-      prisma.user.count({ where: { isAdmin: false } }),
-      prisma.user.count({ where: { isPaid: true, isAdmin: false } }),
-      prisma.prediction.count({ where: { user: { isAdmin: false } } }),
-      prisma.predictionPoints.count({ where: { correct: true, user: { isAdmin: false } } }),
+      prisma.user.count({ where: { isAdmin: false, isBlocked: false } }),
+      prisma.user.count({ where: { isPaid: true, isAdmin: false, isBlocked: false } }),
+      prisma.prediction.count({ where: { user: { isAdmin: false, isBlocked: false } } }),
+      prisma.predictionPoints.count({ where: { correct: true, user: { isAdmin: false, isBlocked: false } } }),
     ]),
     getPoolStats(),
     prisma.match.count({ where: { status: "FINISHED" } }),
@@ -130,6 +131,7 @@ async function getAdminData(adminId: string) {
 
 export default async function AdminProfilePage() {
   const session = await auth();
+  if (session?.user?.isBlocked) redirect("/blocked");
   if (!session?.user?.isAdmin) redirect("/");
 
   const data = await getAdminData(session.user.id);
@@ -226,7 +228,7 @@ export default async function AdminProfilePage() {
                     color: "rgba(96,165,250,0.92)",
                   }}
                 >
-                  Operador
+                  {data.admin.isSuperAdmin ? "Super admin" : "Operador"}
                 </span>
               </div>
               <p className="theme-text-soft mt-1 truncate text-[0.82rem]">{data.admin.email}</p>

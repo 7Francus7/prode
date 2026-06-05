@@ -6,7 +6,7 @@ import { env } from "@/lib/env";
 
 export async function POST() {
   const session = await auth();
-  if (!session?.user?.isAdmin) {
+  if (!session?.user?.isAdmin || session.user.isBlocked) {
     return NextResponse.json({ error: "Sin permisos" }, { status: 403 });
   }
 

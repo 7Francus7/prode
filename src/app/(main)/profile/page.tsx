@@ -40,7 +40,7 @@ async function getProfileData(userId: string) {
 
   const rank =
     (await prisma.user.count({
-      where: { isAdmin: false, totalPoints: { gt: user.totalPoints } },
+      where: { isAdmin: false, isBlocked: false, totalPoints: { gt: user.totalPoints } },
     })) + 1;
 
   return {

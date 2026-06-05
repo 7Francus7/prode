@@ -11,6 +11,9 @@ export async function GET(
   if (!session?.user?.id) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
+  if (session.user.isBlocked) {
+    return NextResponse.json({ error: "Cuenta bloqueada" }, { status: 403 });
+  }
 
   const { id } = await params;
 
@@ -30,7 +33,7 @@ export async function GET(
   }
 
   const predictions = await prisma.prediction.findMany({
-    where: { matchId: id, user: { isAdmin: false } },
+    where: { matchId: id, user: { isAdmin: false, isBlocked: false } },
     include: {
       user: { select: { id: true, name: true, image: true } },
       predictionPoints: { select: { correct: true } },

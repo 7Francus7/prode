@@ -51,7 +51,7 @@ export async function sendMatchResultPush(
   if (!match?.winner) return;
 
   const points = await db.predictionPoints.findMany({
-    where: { matchId },
+    where: { matchId, user: { isBlocked: false } },
     select: { userId: true, correct: true },
   });
 
@@ -84,12 +84,12 @@ export async function sendGlobalLockReminder(db: PrismaClient): Promise<void> {
   if (!initVapid()) return;
 
   const subs = await db.pushSubscription.findMany({
-    include: { user: { select: { isPaid: true } } },
+    include: { user: { select: { isPaid: true, isBlocked: true } } },
   });
 
   await Promise.allSettled(
     subs
-      .filter((sub) => sub.user.isPaid)
+      .filter((sub) => sub.user.isPaid && !sub.user.isBlocked)
       .map((sub) =>
         sendPush(db, sub.id, sub.endpoint, sub.p256dh, sub.auth, {
           title: "¡Las predicciones cierran pronto!",

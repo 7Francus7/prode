@@ -7,6 +7,9 @@ export async function PATCH(request: Request) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
+  if (session.user.isBlocked) {
+    return NextResponse.json({ error: "Cuenta bloqueada" }, { status: 403 });
+  }
 
   const { name } = await request.json();
   if (!name?.trim()) {

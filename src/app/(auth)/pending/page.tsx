@@ -33,6 +33,7 @@ function DataRow({ label, value, mono }: { label: string; value: string; mono?: 
 export default async function PendingPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
+  if (session.user.isBlocked) redirect("/blocked");
   if (session.user.isPaid) redirect("/");
 
   const userName = session.user.name ?? "Participante";

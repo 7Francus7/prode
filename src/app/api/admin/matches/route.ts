@@ -5,7 +5,7 @@ import type { MatchStatus } from "@prisma/client";
 
 export async function GET(request: Request) {
   const session = await auth();
-  if (!session?.user?.isAdmin) {
+  if (!session?.user?.isAdmin || session.user.isBlocked) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 

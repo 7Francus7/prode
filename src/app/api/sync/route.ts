@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   const session = await auth();
-  if (!session?.user?.isAdmin) {
+  if (!session?.user?.isAdmin || session.user.isBlocked) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

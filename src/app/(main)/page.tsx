@@ -50,7 +50,7 @@ async function getHomeData(userId: string) {
       take: 5,
     }),
     prisma.user.findMany({
-      where: { isAdmin: false },
+      where: { isAdmin: false, isBlocked: false },
       select: { id: true, name: true, totalPoints: true },
       orderBy: { totalPoints: "desc" },
       take: 5,
@@ -59,7 +59,7 @@ async function getHomeData(userId: string) {
     prisma.predictionPoints.count({ where: { userId, correct: true } }),
     prisma.prediction.count({ where: { userId } }),
     prisma.predictionPoints.count({ where: { userId } }),
-    prisma.user.count({ where: { isAdmin: false } }),
+    prisma.user.count({ where: { isAdmin: false, isBlocked: false } }),
     prisma.match.count({
       where: {
         status: "SCHEDULED",
@@ -82,7 +82,7 @@ async function getHomeData(userId: string) {
   const totalPoints = userRecord?.totalPoints ?? 0;
   const userRank = userRecord
     ? (await prisma.user.count({
-        where: { isAdmin: false, totalPoints: { gt: totalPoints } },
+        where: { isAdmin: false, isBlocked: false, totalPoints: { gt: totalPoints } },
       })) + 1
     : 0;
 

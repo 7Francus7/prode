@@ -7,6 +7,7 @@ import type { MatchStatus } from "@prisma/client";
 export async function GET(request: Request) {
   const session = await auth();
   const { searchParams } = new URL(request.url);
+  const userId = session?.user?.id && !session.user.isBlocked ? session.user.id : null;
 
   const group = searchParams.get("group");
   const round = searchParams.get("round");
@@ -26,8 +27,8 @@ export async function GET(request: Request) {
       homeTeam: true,
       awayTeam: true,
       group: true,
-      ...(session?.user?.id
-        ? { predictions: { where: { userId: session.user.id }, take: 1 } }
+      ...(userId
+        ? { predictions: { where: { userId }, take: 1 } }
         : {}),
     },
     orderBy: { matchDate: "asc" },

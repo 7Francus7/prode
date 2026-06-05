@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 export default async function MainLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
+  if (session.user.isBlocked) redirect("/blocked");
 
   // Admins bypass payment gate
   if (session.user.isAdmin) redirect("/admin/users");

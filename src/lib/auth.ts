@@ -24,7 +24,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { email },
         });
 
-        if (!user || !user.password) return null;
+        if (!user || !user.password || user.isBlocked) return null;
 
         const valid = await bcrypt.compare(
           credentials.password as string,
@@ -38,7 +38,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: user.email,
           image: user.image,
           isAdmin: user.isAdmin,
+          isSuperAdmin: user.isSuperAdmin,
           isPaid: user.isPaid,
+          isBlocked: user.isBlocked,
         };
       },
     }),
@@ -49,24 +51,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id;
         token.isAdmin = user.isAdmin;
+        token.isSuperAdmin = user.isSuperAdmin;
         token.isPaid = user.isPaid;
+        token.isBlocked = user.isBlocked;
       }
       return token;
     },
     async session({ session, token }) {
       session.user.id = token.id as string;
 
-      // Always fetch fresh isPaid/isAdmin from DB so changes by admin take effect immediately
+      // Always fetch fresh account flags from DB so admin changes take effect immediately.
       if (token.id) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { isPaid: true, isAdmin: true },
+          select: { isPaid: true, isAdmin: true, isSuperAdmin: true, isBlocked: true },
         });
-        session.user.isPaid = dbUser?.isPaid ?? false;
-        session.user.isAdmin = dbUser?.isAdmin ?? false;
+        const isActive = !!dbUser && !dbUser.isBlocked;
+        session.user.isPaid = isActive ? dbUser.isPaid : false;
+        session.user.isAdmin = isActive ? dbUser.isAdmin : false;
+        session.user.isSuperAdmin = isActive ? dbUser.isSuperAdmin : false;
+        session.user.isBlocked = !isActive;
       } else {
         session.user.isPaid = (token.isPaid as boolean) ?? false;
         session.user.isAdmin = (token.isAdmin as boolean) ?? false;
+        session.user.isSuperAdmin = (token.isSuperAdmin as boolean) ?? false;
+        session.user.isBlocked = (token.isBlocked as boolean) ?? false;
       }
 
       return session;
