@@ -201,6 +201,12 @@ html.dark {
     font-family: var(--font-body), system-ui, sans-serif;
     letter-spacing: -0.015em;
     overscroll-behavior-y: none;
+    overscroll-behavior-x: none;
+    /* clip (not hidden) recorta el desborde horizontal sin crear un
+       contenedor de scroll, preservando position: sticky y los
+       contenedores con overflow-x-auto intencionales. */
+    overflow-x: clip;
+    max-width: 100%;
   }
 
   h1, h2, h3, .font-display {
