@@ -8,12 +8,16 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function isMatchLocked(matchDate: Date | string, status?: MatchStatus): boolean {
+export function isMatchLocked(
+  matchDate: Date | string,
+  status?: MatchStatus,
+  now: Date = new Date()
+): boolean {
   if (status === "LIVE" || status === "FINISHED") {
     return true;
   }
 
-  return new Date() >= new Date(matchDate);
+  return now >= new Date(matchDate);
 }
 
 // First match of the World Cup 2026 (opener): 11 Jun 2026, 19:00 UTC.
@@ -25,12 +29,16 @@ export const GLOBAL_LOCK_ISO = new Date(
   new Date(WORLD_CUP_FIRST_MATCH_ISO).getTime() - 60 * 60 * 1000,
 ).toISOString();
 
-export function isGlobalPredictionLocked(): boolean {
-  return new Date() >= new Date(GLOBAL_LOCK_ISO);
+function getConfiguredGlobalLockISO(): string {
+  return process.env.PRODE_GLOBAL_LOCK_ISO || process.env.NEXT_PUBLIC_PRODE_GLOBAL_LOCK_ISO || GLOBAL_LOCK_ISO;
+}
+
+export function isGlobalPredictionLocked(now: Date = new Date()): boolean {
+  return now >= new Date(getConfiguredGlobalLockISO());
 }
 
 export function getGlobalLockDateISO(): string {
-  return GLOBAL_LOCK_ISO;
+  return getConfiguredGlobalLockISO();
 }
 
 export function formatMatchDate(date: Date | string): string {

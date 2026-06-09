@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import MatchCard from "@/components/MatchCard";
 import GroupStandings from "@/components/GroupStandings";
-import { cn, isGlobalPredictionLocked } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { MatchWithTeams, StandingEntry } from "@/types";
 
 const GROUP_TABS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
@@ -45,18 +45,18 @@ export default function FixtureClient({
   initialGroup,
   initialMatches,
   initialStandings,
+  initialGlobalLocked,
 }: {
   initialGroup: string;
   initialMatches: MatchWithTeams[];
   initialStandings: StandingEntry[];
+  initialGlobalLocked: boolean;
 }) {
   const [activeGroup, setActiveGroup] = useState(initialGroup);
   const [matches, setMatches] = useState<MatchWithTeams[]>(initialMatches);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const isFirstRender = useRef(true);
-
-  const globalLocked = isGlobalPredictionLocked();
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -162,7 +162,7 @@ export default function FixtureClient({
       ) : (
         <div className="space-y-3">
           {matches.map((match) => (
-            <MatchCard key={match.id} match={match} isAuthenticated globalLocked={globalLocked} />
+            <MatchCard key={match.id} match={match} isAuthenticated globalLocked={initialGlobalLocked} />
           ))}
         </div>
       )}

@@ -66,10 +66,12 @@ export default function MatchCard({
   const [showPicks, setShowPicks] = useState(false);
   const [picks, setPicks] = useState<PickEntry[] | null>(null);
   const [picksLoading, setPicksLoading] = useState(false);
-  const [predictionsClosed, setPredictionsClosed] = useState(globalLocked);
+  const initiallyLocked =
+    globalLocked || match.isLocked === true || isMatchLocked(match.matchDate, match.status);
+  const [predictionsClosed, setPredictionsClosed] = useState(initiallyLocked);
 
   const lockDateISO = getGlobalLockDateISO();
-  const matchStarted = isMatchLocked(match.matchDate);
+  const matchStarted = isMatchLocked(match.matchDate, match.status);
   const finished = match.status === "FINISHED";
   const isLive = match.status === "LIVE";
   const winner = match.winner as PredictionResult | null;

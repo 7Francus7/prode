@@ -26,8 +26,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Pago pendiente de confirmación" }, { status: 403 });
   }
 
-  // Global lock — admins bypass
-  if (isGlobalPredictionLocked() && !session.user.isAdmin) {
+  if (isGlobalPredictionLocked()) {
     return NextResponse.json({ error: "Las predicciones han cerrado" }, { status: 403 });
   }
 
@@ -47,7 +46,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Solo se puede predecir la fase de grupos" }, { status: 403 });
   }
 
-  if (isMatchLocked(match.matchDate, match.status) && !session.user.isAdmin) {
+  if (isMatchLocked(match.matchDate, match.status)) {
     return NextResponse.json({ error: "El partido ya comenzó" }, { status: 403 });
   }
 

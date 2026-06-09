@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { buildGroupStandings } from "@/lib/standings";
-import { isMatchLocked } from "@/lib/utils";
+import { isGlobalPredictionLocked, isMatchLocked } from "@/lib/utils";
 import { redirect } from "next/navigation";
 import FixtureClient from "./FixtureClient";
 import type { MatchWithTeams } from "@/types";
@@ -62,6 +62,7 @@ export default async function FixturePage() {
       initialGroup={INITIAL_GROUP}
       initialMatches={matches.map(toMatchWithTeams)}
       initialStandings={standings}
+      initialGlobalLocked={isGlobalPredictionLocked()}
     />
   );
 }

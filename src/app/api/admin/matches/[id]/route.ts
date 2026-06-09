@@ -3,9 +3,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MatchStatus } from "@prisma/client";
 import {
-  calculateMatchPredictionPoints,
-  clearMatchPredictionPoints,
   determineWinner,
+  recalculateMatchPredictionPointsInTransaction,
 } from "@/lib/matchPoints";
 import { z } from "zod";
 
@@ -48,19 +47,19 @@ export async function PATCH(
       ? determineWinner(newHomeScore, newAwayScore)
       : null;
 
-  const updated = await prisma.match.update({
-    where: { id },
-    data: { homeScore: newHomeScore, awayScore: newAwayScore, status: newStatus, winner },
-    include: { homeTeam: true, awayTeam: true, group: true },
-  });
+  const updated = await prisma.$transaction(async (tx) => {
+    const nextMatch = await tx.match.update({
+      where: { id },
+      data: { homeScore: newHomeScore, awayScore: newAwayScore, status: newStatus, winner },
+      include: { homeTeam: true, awayTeam: true, group: true },
+    });
 
-  if (match.status === MatchStatus.FINISHED || newStatus === MatchStatus.FINISHED) {
-    await clearMatchPredictionPoints(prisma, id);
-  }
+    if (match.status === MatchStatus.FINISHED || newStatus === MatchStatus.FINISHED) {
+      await recalculateMatchPredictionPointsInTransaction(tx, id);
+    }
 
-  if (newStatus === MatchStatus.FINISHED && winner && match.groupId) {
-    await calculateMatchPredictionPoints(prisma, id);
-  }
+    return nextMatch;
+  }, { timeout: 20_000 });
 
   return NextResponse.json(updated);
 }

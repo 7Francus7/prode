@@ -1,8 +1,8 @@
 import { PrismaClient, MatchStatus } from "@prisma/client";
 import {
   calculateMatchPredictionPoints,
-  clearMatchPredictionPoints,
   determineWinner,
+  recalculateMatchPredictionPointsInTransaction,
 } from "@/lib/matchPoints";
 import type { FootballApiProvider } from "./footballApi";
 import type { SyncResult } from "@/types";
@@ -96,28 +96,31 @@ export class SyncService {
           match.city !== nextCity ||
           match.country !== nextCountry;
 
-        await this.db.match.update({
-          where: { id: match.id },
-          data: {
-            matchDate: ext.matchDate,
-            stadium: nextStadium,
-            city: nextCity,
-            country: nextCountry,
-            status: newStatus,
-            homeScore: ext.homeScore,
-            awayScore: ext.awayScore,
-            winner,
-          },
-        });
+        await this.db.$transaction(async (tx) => {
+          await tx.match.update({
+            where: { id: match.id },
+            data: {
+              matchDate: ext.matchDate,
+              stadium: nextStadium,
+              city: nextCity,
+              country: nextCountry,
+              status: newStatus,
+              homeScore: ext.homeScore,
+              awayScore: ext.awayScore,
+              winner,
+            },
+          });
+
+          if (
+            wasPreviouslyFinished ||
+            (newStatus === MatchStatus.FINISHED && winner && match.groupId && resultChanged)
+          ) {
+            await recalculateMatchPredictionPointsInTransaction(tx, match.id);
+          }
+        }, { timeout: 20_000 });
         result.updated++;
 
-        if (wasPreviouslyFinished && (newStatus !== MatchStatus.FINISHED || winner === null)) {
-          await clearMatchPredictionPoints(this.db, match.id);
-          continue;
-        }
-
         if (newStatus === MatchStatus.FINISHED && winner && match.groupId && resultChanged) {
-          await this.calculatePoints(match.id);
           result.pointsCalculated++;
           if (!wasPreviouslyFinished) {
             sendMatchResultPush(this.db, match.id).catch(() => {});

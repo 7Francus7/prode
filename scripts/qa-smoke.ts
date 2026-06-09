@@ -129,7 +129,7 @@ async function waitForServer() {
   throw new Error("Server did not start on time");
 }
 
-function startServer(): ChildProcess {
+function startServer(extraEnv: Record<string, string> = {}): ChildProcess {
   const nextBin = fileURLToPath(
     new URL("../node_modules/next/dist/bin/next", import.meta.url)
   );
@@ -139,7 +139,12 @@ function startServer(): ChildProcess {
     [nextBin, "start", "--hostname", "127.0.0.1", "--port", String(port)],
     {
     cwd: process.cwd(),
-    env: { ...process.env, NEXTAUTH_URL: baseUrl, AUTH_TRUST_HOST: "true" },
+    env: {
+      ...process.env,
+      ...extraEnv,
+      NEXTAUTH_URL: baseUrl,
+      AUTH_TRUST_HOST: "true",
+    },
     stdio: ["ignore", "pipe", "pipe"],
     }
   );
@@ -175,8 +180,10 @@ async function loginWithCredentials(client: HttpClient, email: string) {
 
 async function main() {
   const unpaidEmail = `qa-unpaid-${runId}@example.com`;
+  const challengerEmail = `qa-challenger-${runId}@example.com`;
   const adminEmail = `qa-admin-${runId}@example.com`;
   const unpaidName = `QA Unpaid ${runId}`;
+  const challengerName = `QA Challenger ${runId}`;
   const adminName = `QA Admin ${runId}`;
   const fakeEndpoint = `https://example.com/push/${runId}`;
 
@@ -220,6 +227,36 @@ async function main() {
     },
   });
 
+  const globalLockMatch = await prisma.match.create({
+    data: {
+      homeTeamId: homeTeam.id,
+      awayTeamId: awayTeam.id,
+      groupId: qaGroup.id,
+      matchDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+      stadium: "QA Global Lock Stadium",
+      city: "QA City",
+      country: "QA Country",
+      round: qaGroup.label,
+      status: "SCHEDULED",
+      externalId: `QA_GLOBAL_LOCK_MATCH_${runId}`,
+    },
+  });
+
+  const kickoffLockMatch = await prisma.match.create({
+    data: {
+      homeTeamId: homeTeam.id,
+      awayTeamId: awayTeam.id,
+      groupId: qaGroup.id,
+      matchDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+      stadium: "QA Kickoff Lock Stadium",
+      city: "QA City",
+      country: "QA Country",
+      round: qaGroup.label,
+      status: "SCHEDULED",
+      externalId: `QA_KICKOFF_LOCK_MATCH_${runId}`,
+    },
+  });
+
   const adminUser = await prisma.user.create({
     data: {
       name: adminName,
@@ -230,7 +267,16 @@ async function main() {
     },
   });
 
-  const server = startServer();
+  await prisma.user.create({
+    data: {
+      name: challengerName,
+      email: challengerEmail,
+      password: hashed,
+      isPaid: true,
+    },
+  });
+
+  let server = startServer({ PRODE_GLOBAL_LOCK_ISO: "2099-01-01T00:00:00Z" });
 
   try {
     await waitForServer();
@@ -238,6 +284,7 @@ async function main() {
 
     const anon = new HttpClient();
     const unpaid = new HttpClient();
+    const challenger = new HttpClient();
     const admin = new HttpClient();
 
     console.log("Checking unauthenticated redirect");
@@ -298,6 +345,25 @@ async function main() {
     const predictions = Array.isArray(predictionList.json) ? predictionList.json : [];
     assert(predictions.some((entry) => (entry as { matchId?: string }).matchId === match.id), "Saved prediction missing from API");
 
+    console.log("Saving challenger prediction");
+    await loginWithCredentials(challenger, challengerEmail);
+    const challengerPrediction = await challenger.post("/api/predictions", {
+      matchId: match.id,
+      prediction: "AWAY",
+    });
+    assert(challengerPrediction.response.status === 200, `Challenger prediction save failed: ${challengerPrediction.response.status}`);
+
+    console.log("Checking kickoff-time lock while status is scheduled");
+    await prisma.match.update({
+      where: { id: kickoffLockMatch.id },
+      data: { matchDate: new Date(Date.now() - 60 * 60 * 1000), status: "SCHEDULED" },
+    });
+    const kickoffLockedPrediction = await unpaid.post("/api/predictions", {
+      matchId: kickoffLockMatch.id,
+      prediction: "HOME",
+    });
+    assert(kickoffLockedPrediction.response.status === 403, `Kickoff-locked prediction should be forbidden: ${kickoffLockedPrediction.response.status}`);
+
     console.log("Locking predictions when match turns live");
     const live = await admin.patch(`/api/admin/matches/${match.id}`, {
       status: "LIVE",
@@ -321,6 +387,19 @@ async function main() {
     });
     assert(finished.response.status === 200, `Admin match update failed: ${finished.response.status}`);
 
+    const pointsAfterFinish = await prisma.predictionPoints.count({ where: { matchId: match.id } });
+    assert(pointsAfterFinish === 2, `Expected two prediction point rows, got ${pointsAfterFinish}`);
+
+    console.log("Saving same result again without duplicating points");
+    const finishedAgain = await admin.patch(`/api/admin/matches/${match.id}`, {
+      homeScore: 2,
+      awayScore: 0,
+      status: "FINISHED",
+    });
+    assert(finishedAgain.response.status === 200, `Repeated result save failed: ${finishedAgain.response.status}`);
+    const pointsAfterRepeat = await prisma.predictionPoints.count({ where: { matchId: match.id } });
+    assert(pointsAfterRepeat === 2, `Repeated save duplicated point rows: ${pointsAfterRepeat}`);
+
     await prisma.match.update({
       where: { id: match.id },
       data: { matchDate: new Date(Date.now() - 60 * 60 * 1000) },
@@ -330,7 +409,7 @@ async function main() {
     const picks = await unpaid.get(`/api/matches/${match.id}/picks`);
     assert(picks.response.status === 200, `Locked picks should load: ${picks.response.status}`);
     const picksList = Array.isArray(picks.json) ? picks.json : [];
-    assert(picksList.length === 1, `Expected one pick, got ${picksList.length}`);
+    assert(picksList.length === 2, `Expected two picks, got ${picksList.length}`);
 
     const refreshedUser = await prisma.user.findUniqueOrThrow({
       where: { email: unpaidEmail },
@@ -338,12 +417,62 @@ async function main() {
     });
     assert(refreshedUser.totalPoints === 1, `Expected totalPoints=1, got ${refreshedUser.totalPoints}`);
 
+    const refreshedChallenger = await prisma.user.findUniqueOrThrow({
+      where: { email: challengerEmail },
+      select: { totalPoints: true },
+    });
+    assert(refreshedChallenger.totalPoints === 0, `Expected challenger totalPoints=0, got ${refreshedChallenger.totalPoints}`);
+
     const ranking = await unpaid.get("/api/ranking");
     const rankingEntries = Array.isArray(ranking.json) ? ranking.json : [];
     assert(
       rankingEntries.some((entry) => (entry as { name?: string; totalPoints?: number }).name === unpaidName && (entry as { totalPoints?: number }).totalPoints === 1),
       "Ranking should include the paid user with 1 point"
     );
+
+    const unpaidIndex = rankingEntries.findIndex((entry) => (entry as { name?: string }).name === unpaidName);
+    const challengerIndex = rankingEntries.findIndex((entry) => (entry as { name?: string }).name === challengerName);
+    assert(unpaidIndex >= 0 && challengerIndex >= 0 && unpaidIndex < challengerIndex, "Ranking should order 1-point user above 0-point user");
+
+    console.log("Correcting result and recalculating points");
+    const corrected = await admin.patch(`/api/admin/matches/${match.id}`, {
+      homeScore: 0,
+      awayScore: 1,
+      status: "FINISHED",
+    });
+    assert(corrected.response.status === 200, `Corrected result save failed: ${corrected.response.status}`);
+    const correctedUnpaid = await prisma.user.findUniqueOrThrow({
+      where: { email: unpaidEmail },
+      select: { totalPoints: true },
+    });
+    const correctedChallenger = await prisma.user.findUniqueOrThrow({
+      where: { email: challengerEmail },
+      select: { totalPoints: true },
+    });
+    assert(correctedUnpaid.totalPoints === 0, `Expected corrected unpaid totalPoints=0, got ${correctedUnpaid.totalPoints}`);
+    assert(correctedChallenger.totalPoints === 1, `Expected corrected challenger totalPoints=1, got ${correctedChallenger.totalPoints}`);
+
+    const correctedRanking = await unpaid.get("/api/ranking");
+    const correctedEntries = Array.isArray(correctedRanking.json) ? correctedRanking.json : [];
+    const correctedUnpaidIndex = correctedEntries.findIndex((entry) => (entry as { name?: string }).name === unpaidName);
+    const correctedChallengerIndex = correctedEntries.findIndex((entry) => (entry as { name?: string }).name === challengerName);
+    assert(
+      correctedChallengerIndex >= 0 && correctedUnpaidIndex >= 0 && correctedChallengerIndex < correctedUnpaidIndex,
+      "Ranking should reorder after corrected result"
+    );
+
+    console.log("Checking global lock blocks API predictions");
+    server.kill("SIGTERM");
+    await delay(1000);
+    server = startServer({ PRODE_GLOBAL_LOCK_ISO: "2000-01-01T00:00:00Z" });
+    await waitForServer();
+    const lockedUser = new HttpClient();
+    await loginWithCredentials(lockedUser, unpaidEmail);
+    const globalLockPrediction = await lockedUser.post("/api/predictions", {
+      matchId: globalLockMatch.id,
+      prediction: "HOME",
+    });
+    assert(globalLockPrediction.response.status === 403, `Global lock prediction should be forbidden: ${globalLockPrediction.response.status}`);
 
     console.log("Checking sync routes");
     const liveSync = await admin.get("/api/sync");
@@ -409,24 +538,30 @@ async function main() {
       where: {
         OR: [
           { endpoint: fakeEndpoint },
-          { user: { email: { in: [unpaidEmail, adminEmail] } } },
+          { user: { email: { in: [unpaidEmail, challengerEmail, adminEmail] } } },
         ],
       },
     });
     await prisma.predictionPoints.deleteMany({
       where: {
-        OR: [{ matchId: match.id }, { user: { email: { in: [unpaidEmail, adminEmail] } } }],
+        OR: [
+          { matchId: { in: [match.id, globalLockMatch.id, kickoffLockMatch.id] } },
+          { user: { email: { in: [unpaidEmail, challengerEmail, adminEmail] } } },
+        ],
       },
     });
     await prisma.prediction.deleteMany({
       where: {
-        OR: [{ matchId: match.id }, { user: { email: { in: [unpaidEmail, adminEmail] } } }],
+        OR: [
+          { matchId: { in: [match.id, globalLockMatch.id, kickoffLockMatch.id] } },
+          { user: { email: { in: [unpaidEmail, challengerEmail, adminEmail] } } },
+        ],
       },
     });
-    await prisma.match.deleteMany({ where: { id: match.id } });
+    await prisma.match.deleteMany({ where: { id: { in: [match.id, globalLockMatch.id, kickoffLockMatch.id] } } });
     await prisma.team.deleteMany({ where: { id: { in: [homeTeam.id, awayTeam.id] } } });
     await prisma.group.deleteMany({ where: { id: qaGroup.id } });
-    await prisma.user.deleteMany({ where: { email: { in: [unpaidEmail, adminEmail] } } });
+    await prisma.user.deleteMany({ where: { email: { in: [unpaidEmail, challengerEmail, adminEmail] } } });
     await prisma.$disconnect();
   }
 }
