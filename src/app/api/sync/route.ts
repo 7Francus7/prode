@@ -29,10 +29,15 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const full = searchParams.get("full") === "true";
+  const live = searchParams.get("live") === "true";
 
   try {
     const service = new SyncService(createFootballApiProvider(), prisma);
-    const result = full ? await service.syncAllMatches() : await service.syncLiveMatches();
+    const result = full
+      ? await service.syncAllMatches()
+      : live
+        ? await service.syncLiveMatches()
+        : await service.syncTodayMatches();
     return NextResponse.json(result);
   } catch (error) {
     console.error("[sync:admin] error:", error);

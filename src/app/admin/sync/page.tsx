@@ -212,7 +212,7 @@ export default function AdminSyncPage() {
                   "border border-blue-500/16 bg-blue-500/12 text-blue-300 hover:bg-blue-500/18 disabled:opacity-50"
                 )}
               >
-                {loading === "live" ? "Sincronizando..." : "Sync partidos en vivo"}
+                {loading === "live" ? "Sincronizando..." : "Sync partidos de hoy"}
               </button>
               <button
                 onClick={() => runSync(true)}
