@@ -75,7 +75,10 @@ function mapFixture(f: ApiFixture): ExternalMatch {
     HT: "LIVE",
     "2H": "LIVE",
     ET: "LIVE",
+    BT: "LIVE",
     P: "LIVE",
+    SUSP: "LIVE",
+    INT: "LIVE",
     FT: "FINISHED",
     AET: "FINISHED",
     PEN: "FINISHED",
@@ -83,8 +86,8 @@ function mapFixture(f: ApiFixture): ExternalMatch {
 
   return {
     externalId: String(f.fixture.id),
-    homeTeamCode: (f.teams.home.code ?? f.teams.home.name) as string,
-    awayTeamCode: (f.teams.away.code ?? f.teams.away.name) as string,
+    homeTeamCode: mapTeamCode(f.teams.home),
+    awayTeamCode: mapTeamCode(f.teams.away),
     matchDate: new Date(f.fixture.date),
     stadium: f.fixture.venue?.name ?? "",
     city: f.fixture.venue?.city ?? "",
@@ -94,6 +97,133 @@ function mapFixture(f: ApiFixture): ExternalMatch {
     awayScore: f.goals.away,
   };
 }
+
+function mapTeamCode(team: { code?: string | null; name?: string | null }): string {
+  const code = team.code?.trim() ?? "";
+  const name = team.name?.trim() ?? "";
+
+  return (
+    TEAM_CODE_ALIASES[normalizeTeamKey(code)] ??
+    TEAM_CODE_ALIASES[normalizeTeamKey(name)] ??
+    (code || name)
+  );
+}
+
+function normalizeTeamKey(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+const TEAM_CODE_ALIASES: Record<string, string> = Object.fromEntries(
+  Object.entries({
+    MEX: "MEX",
+    Mexico: "MEX",
+    RSA: "RSA",
+    ZAF: "RSA",
+    "South Africa": "RSA",
+    KOR: "KOR",
+    "South Korea": "KOR",
+    CZE: "CZE",
+    Czechia: "CZE",
+    "Czech Republic": "CZE",
+    CAN: "CAN",
+    Canada: "CAN",
+    BIH: "BIH",
+    "Bosnia and Herzegovina": "BIH",
+    QAT: "QAT",
+    Qatar: "QAT",
+    SUI: "SUI",
+    Switzerland: "SUI",
+    BRA: "BRA",
+    Brazil: "BRA",
+    MAR: "MAR",
+    Morocco: "MAR",
+    HAI: "HAI",
+    Haiti: "HAI",
+    SCO: "SCO",
+    Scotland: "SCO",
+    USA: "USA",
+    "United States": "USA",
+    "United States of America": "USA",
+    PAR: "PAR",
+    Paraguay: "PAR",
+    AUS: "AUS",
+    Australia: "AUS",
+    TUR: "TUR",
+    Turkey: "TUR",
+    Turkiye: "TUR",
+    GER: "GER",
+    Germany: "GER",
+    CUW: "CUW",
+    Curacao: "CUW",
+    CIV: "CIV",
+    "Ivory Coast": "CIV",
+    "Cote d'Ivoire": "CIV",
+    Ecuador: "ECU",
+    ECU: "ECU",
+    NED: "NED",
+    Netherlands: "NED",
+    JPN: "JPN",
+    Japan: "JPN",
+    SWE: "SWE",
+    Sweden: "SWE",
+    TUN: "TUN",
+    Tunisia: "TUN",
+    BEL: "BEL",
+    Belgium: "BEL",
+    EGY: "EGY",
+    Egypt: "EGY",
+    IRN: "IRN",
+    Iran: "IRN",
+    NZL: "NZL",
+    "New Zealand": "NZL",
+    ESP: "ESP",
+    Spain: "ESP",
+    CPV: "CPV",
+    "Cape Verde": "CPV",
+    KSA: "KSA",
+    "Saudi Arabia": "KSA",
+    URU: "URU",
+    Uruguay: "URU",
+    FRA: "FRA",
+    France: "FRA",
+    SEN: "SEN",
+    Senegal: "SEN",
+    IRQ: "IRQ",
+    Iraq: "IRQ",
+    NOR: "NOR",
+    Norway: "NOR",
+    ARG: "ARG",
+    Argentina: "ARG",
+    ALG: "ALG",
+    Algeria: "ALG",
+    AUT: "AUT",
+    Austria: "AUT",
+    JOR: "JOR",
+    Jordan: "JOR",
+    POR: "POR",
+    Portugal: "POR",
+    COD: "COD",
+    "DR Congo": "COD",
+    "Congo DR": "COD",
+    "Democratic Republic of the Congo": "COD",
+    UZB: "UZB",
+    Uzbekistan: "UZB",
+    COL: "COL",
+    Colombia: "COL",
+    ENG: "ENG",
+    England: "ENG",
+    CRO: "CRO",
+    Croatia: "CRO",
+    GHA: "GHA",
+    Ghana: "GHA",
+    PAN: "PAN",
+    Panama: "PAN",
+  }).map(([key, value]) => [normalizeTeamKey(key), value])
+);
 
 export class MockFootballProvider implements FootballApiProvider {
   async getWorldCupMatches(): Promise<ExternalMatch[]> {
