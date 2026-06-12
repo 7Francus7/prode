@@ -11,6 +11,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const provider =
+    env.FOOTBALL_API_KEY && env.FOOTBALL_API_KEY !== "mock" ? "api-football" : "mock";
+
   try {
     const service = new SyncService(createFootballApiProvider(), prisma);
 
@@ -18,6 +21,7 @@ export async function POST(request: Request) {
     if (!(await service.hasActiveMatchWindow())) {
       return NextResponse.json({
         skipped: true,
+        provider,
         synced: 0,
         updated: 0,
         pointsCalculated: 0,
@@ -26,7 +30,7 @@ export async function POST(request: Request) {
     }
 
     const result = await service.syncTodayMatches();
-    return NextResponse.json(result);
+    return NextResponse.json({ ...result, provider });
   } catch (error) {
     console.error("[sync:cron] error:", error);
     return NextResponse.json({ error: "Sync failed" }, { status: 500 });

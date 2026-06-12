@@ -20,9 +20,11 @@ export class SyncService {
 
   /**
    * True si hay un partido en vivo, por arrancar (próximos 10 min) o que ya
-   * debería haber arrancado (últimas 3 h) y el sync todavía no lo cerró.
+   * debería haber arrancado (últimas 6 h) y el sync todavía no lo cerró.
    * Permite que el cron externo pegue seguido sin gastar cuota de API fuera
-   * de ventana de partidos.
+   * de ventana de partidos. Las 6 h dan margen para partidos que quedaron
+   * trabados en SCHEDULED (en operación normal pasan a FINISHED en ~2 h y
+   * la ventana se cierra sola).
    */
   async hasActiveMatchWindow(): Promise<boolean> {
     const now = Date.now();
@@ -33,7 +35,7 @@ export class SyncService {
           {
             status: MatchStatus.SCHEDULED,
             matchDate: {
-              gte: new Date(now - 3 * 60 * 60 * 1000),
+              gte: new Date(now - 6 * 60 * 60 * 1000),
               lte: new Date(now + 10 * 60 * 1000),
             },
           },
