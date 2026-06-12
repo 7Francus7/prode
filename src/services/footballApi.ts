@@ -31,7 +31,16 @@ export class ApiFootballProvider implements FootballApiProvider {
       next: { revalidate: 0 },
     });
     if (!res.ok) throw new Error(`API-Football error: ${res.status}`);
-    return res.json();
+    const data = await res.json();
+
+    // API-Football devuelve 200 con un objeto `errors` cuando la key, el plan
+    // o los parámetros no sirven. Sin esto, los fallos quedan como synced: 0.
+    const apiErrors = data?.errors;
+    if (apiErrors && !Array.isArray(apiErrors) && Object.keys(apiErrors).length > 0) {
+      throw new Error(`API-Football: ${JSON.stringify(apiErrors)}`);
+    }
+
+    return data as T;
   }
 
   async getWorldCupMatches(season: number): Promise<ExternalMatch[]> {

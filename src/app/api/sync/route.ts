@@ -14,11 +14,13 @@ export async function POST(request: Request) {
   const provider =
     env.FOOTBALL_API_KEY && env.FOOTBALL_API_KEY !== "mock" ? "api-football" : "mock";
 
+  const force = new URL(request.url).searchParams.get("force") === "true";
+
   try {
     const service = new SyncService(createFootballApiProvider(), prisma);
 
     // Sin partidos en juego ni por arrancar: no gastar cuota de API-Football.
-    if (!(await service.hasActiveMatchWindow())) {
+    if (!force && !(await service.hasActiveMatchWindow())) {
       return NextResponse.json({
         skipped: true,
         provider,
