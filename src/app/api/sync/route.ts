@@ -35,7 +35,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ ...result, provider });
   } catch (error) {
     console.error("[sync:cron] error:", error);
-    return NextResponse.json({ error: "Sync failed" }, { status: 500 });
+    // El mensaje no incluye la key (viaja en header); sirve para diagnóstico
+    // desde cron-job.org sin acceso a logs de Vercel.
+    return NextResponse.json(
+      { error: "Sync failed", detail: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
   }
 }
 
