@@ -84,6 +84,31 @@ export default function FixtureClient({
       .finally(() => setLoading(false));
   }, [activeGroup, initialGroup]);
 
+  // Mientras haya un partido en vivo (o uno que ya debería haber arrancado)
+  // en el grupo activo, refrescar el marcador cada minuto.
+  const hasLiveMatch = matches.some((match) => {
+    if (match.status === "LIVE") return true;
+    if (match.status !== "SCHEDULED") return false;
+    const kickoff = new Date(match.matchDate).getTime();
+    return kickoff <= Date.now() && Date.now() - kickoff < 3 * 60 * 60 * 1000;
+  });
+
+  useEffect(() => {
+    if (!hasLiveMatch) return;
+
+    const interval = setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      fetch(`/api/matches?group=${activeGroup}`)
+        .then(async (response) => {
+          const data = await response.json().catch(() => null);
+          if (response.ok && Array.isArray(data)) setMatches(data);
+        })
+        .catch(() => {});
+    }, 60_000);
+
+    return () => clearInterval(interval);
+  }, [hasLiveMatch, activeGroup]);
+
   return (
     <div className="space-y-5">
       <section

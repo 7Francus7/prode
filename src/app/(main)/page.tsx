@@ -8,6 +8,7 @@ import MyPositionBanner from "@/components/MyPositionBanner";
 import { PoolBanner } from "@/components/PoolBanner";
 import { GlobalLockCountdown } from "@/components/GlobalLockCountdown";
 import PushNotificationCard from "@/components/PushNotificationCard";
+import LiveRefresher from "@/components/LiveRefresher";
 import ShareGroupCard from "@/components/ShareGroupCard";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -222,6 +223,10 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-8">
+      <LiveRefresher
+        hasLive={liveMatches.length > 0}
+        nextKickoffISO={nextMatches[0]?.matchDate.toISOString() ?? null}
+      />
       <section
         className="relative overflow-hidden rounded-[2.15rem] border px-4 py-5 sm:px-6 sm:py-6"
         style={{

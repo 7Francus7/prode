@@ -104,13 +104,21 @@ When touching auth/payment/data routes, verify:
 ## Sync System
 
 The match result sync pipeline:
-1. `cron-job.org` → POST `/api/sync` every 15 min
-2. `syncTodayMatches()` → API-Football `/fixtures?league=1&season=2026&from=today&to=today`
-3. `#findMatch()` — lookup by `externalId`, fallback by team code + ±2h date window
-4. On match, binds numeric API id to DB record for future fast lookups
-5. When status = FINISHED and winner not yet set → `calculatePoints()` runs automatically
+1. `cron-job.org` → POST `/api/sync` every 5 min
+2. `hasActiveMatchWindow()` gate — skips the external API call unless a match is
+   LIVE, starts within 10 min, or kicked off in the last 3h and isn't closed yet
+3. `syncTodayMatches()` → API-Football `/fixtures?league=1&season=2026&from=today&to=today`
+4. `#findMatch()` — lookup by `externalId`, fallback by team code + ±2h date window
+5. On match, binds numeric API id to DB record for future fast lookups
+6. When status = FINISHED and winner not yet set → `calculatePoints()` runs automatically
+7. Vercel daily cron GET `/api/cron/sync` (00:00 UTC) syncs unconditionally as a
+   safety net for reschedules/missed results
 
-API-Football free tier: 100 req/day. Current usage: ~96/day (every 15 min).
+UI live updates: `LiveRefresher` (home) calls `router.refresh()` every 60s while a
+match is LIVE; `FixtureClient` re-fetches the active group every 60s during live matches.
+
+API-Football free tier: 100 req/day. With the window gate, calls only happen during
+match windows (~12 calls/h per window) — typical group-stage day stays well under quota.
 
 ---
 

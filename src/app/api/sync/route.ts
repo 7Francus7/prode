@@ -13,6 +13,18 @@ export async function POST(request: Request) {
 
   try {
     const service = new SyncService(createFootballApiProvider(), prisma);
+
+    // Sin partidos en juego ni por arrancar: no gastar cuota de API-Football.
+    if (!(await service.hasActiveMatchWindow())) {
+      return NextResponse.json({
+        skipped: true,
+        synced: 0,
+        updated: 0,
+        pointsCalculated: 0,
+        errors: [],
+      });
+    }
+
     const result = await service.syncTodayMatches();
     return NextResponse.json(result);
   } catch (error) {
