@@ -386,11 +386,94 @@ html:not(.dark) .border-white\/6,
 html:not(.dark) .border-white\/7,
 html:not(.dark) .border-white\/8 { border-color: var(--app-border) !important; }
 
+/* ============================================================
+   View Transitions — cross-fade nativo entre pantallas
+   ============================================================ */
+::view-transition-old(root) {
+  animation: vtFadeOut 0.16s ease both;
+}
+::view-transition-new(root) {
+  animation: vtFadeIn 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes vtFadeOut {
+  to { opacity: 0; }
+}
+@keyframes vtFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ============================================================
+   Pelota de fútbol — loaders y splash de inicio
+   ============================================================ */
+@keyframes soccerBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-46%); }
+}
+@keyframes soccerSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes soccerShadow {
+  0%, 100% { transform: translateX(-50%) scaleX(1); opacity: 0.3; }
+  50% { transform: translateX(-50%) scaleX(0.55); opacity: 0.14; }
+}
+@keyframes splashFadeOut {
+  to { opacity: 0; }
+}
+
+.soccer-loader {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+.soccer-bounce {
+  animation: soccerBounce 0.82s cubic-bezier(0.5, 0.05, 0.5, 0.95) infinite;
+  transform-origin: center bottom;
+}
+.soccer-spin {
+  display: block;
+  animation: soccerSpin 1.5s linear infinite;
+}
+.soccer-shadow {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  height: 7px;
+  border-radius: 9999px;
+  background: radial-gradient(ellipse, rgba(15, 23, 42, 0.5) 0%, transparent 70%);
+  animation: soccerShadow 0.82s cubic-bezier(0.5, 0.05, 0.5, 0.95) infinite;
+}
+
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: var(--app-auth-bg);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.splash-screen[data-leaving="true"] {
+  animation: splashFadeOut 0.46s ease forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-page-enter,
   .animate-nav-indicator,
   .animate-fade-in,
   .animate-slide-up {
+    animation: none !important;
+  }
+  .soccer-bounce,
+  .soccer-spin,
+  .soccer-shadow {
+    animation: none !important;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
     animation: none !important;
   }
 }

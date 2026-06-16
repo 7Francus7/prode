@@ -1,17 +1,18 @@
+import SoccerLoader from "@/components/SoccerLoader";
+
 // Skeleton del ranking: hero + podio + filas de tabla.
 export default function Loading() {
   return (
     <div className="space-y-5">
       <section
-        className="rounded-[1.9rem] border px-4 py-6"
+        className="flex items-center justify-center rounded-[1.9rem] border px-4 py-12"
         style={{
           background: "var(--app-hero-bg)",
           borderColor: "var(--app-hero-border)",
           boxShadow: "var(--app-hero-shadow)",
         }}
       >
-        <div className="h-2.5 w-24 rounded-md skeleton" />
-        <div className="mt-3 h-8 w-40 rounded-lg skeleton" />
+        <SoccerLoader label="Cargando ranking" size={58} />
       </section>
 
       <div className="grid grid-cols-3 items-end gap-2">

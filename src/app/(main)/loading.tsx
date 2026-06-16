@@ -1,3 +1,5 @@
+import SoccerLoader from "@/components/SoccerLoader";
+
 // Skeleton de carga genérico. Next lo muestra al instante al navegar a
 // cualquier ruta de (main) que no defina su propio loading, así el cambio
 // de pantalla se siente inmediato mientras se cargan los datos en el server.
@@ -38,16 +40,14 @@ export default function Loading() {
   return (
     <div className="space-y-5">
       <section
-        className="rounded-[1.9rem] border px-4 py-6"
+        className="flex items-center justify-center rounded-[1.9rem] border px-4 py-12"
         style={{
           background: "var(--app-hero-bg)",
           borderColor: "var(--app-hero-border)",
           boxShadow: "var(--app-hero-shadow)",
         }}
       >
-        <div className="h-2.5 w-24 rounded-md skeleton" />
-        <div className="mt-3 h-8 w-44 rounded-lg skeleton" />
-        <div className="mt-3 h-3 w-64 max-w-full rounded-md skeleton" />
+        <SoccerLoader label="Cargando" size={58} />
       </section>
 
       <div className="space-y-3">

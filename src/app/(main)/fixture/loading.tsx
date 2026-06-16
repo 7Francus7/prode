@@ -1,18 +1,20 @@
-// Skeleton del fixture: hero con grid de grupos + posiciones + partidos.
+import SoccerLoader from "@/components/SoccerLoader";
+
+// Skeleton del fixture: hero con pelota + grid de grupos + posiciones + partidos.
 export default function Loading() {
   return (
     <div className="space-y-5">
       <section
-        className="rounded-[1.9rem] border px-4 py-5"
+        className="rounded-[1.9rem] border px-4 py-6"
         style={{
           background: "var(--app-hero-bg)",
           borderColor: "var(--app-hero-border)",
           boxShadow: "var(--app-hero-shadow)",
         }}
       >
-        <div className="h-2.5 w-24 rounded-md skeleton" />
-        <div className="mt-3 h-8 w-32 rounded-lg skeleton" />
-        <div className="mt-3 h-3 w-64 max-w-full rounded-md skeleton" />
+        <div className="flex justify-center py-2">
+          <SoccerLoader label="Cargando fixture" size={56} />
+        </div>
         <div className="mt-5 grid grid-cols-6 gap-1.5">
           {Array.from({ length: 12 }).map((_, i) => (
             <div key={i} className="h-10 w-full rounded-2xl skeleton" />

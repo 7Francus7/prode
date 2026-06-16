@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { ViewTransitions } from "next-view-transitions";
 import SessionProvider from "@/components/SessionProvider";
 import SwRegister from "@/components/SwRegister";
+import SplashScreen from "@/components/SplashScreen";
 
 const bodyFont = Manrope({
   subsets: ["latin"],
@@ -59,8 +61,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <SessionProvider>{children}</SessionProvider>
+        <ViewTransitions>
+          <SessionProvider>{children}</SessionProvider>
+        </ViewTransitions>
         <SwRegister />
+        <SplashScreen />
       </body>
     </html>
   );
