@@ -57,7 +57,7 @@
   }
 
   @keyframes pageEnter {
-    from { opacity: 0; transform: translateY(8px); }
+    from { opacity: 0; transform: translateY(4px); }
     to   { opacity: 1; transform: none; }
   }
 
@@ -230,7 +230,7 @@ html.dark {
 
   .animate-fade-in { animation: fadeIn 0.25s ease-out both; }
   .animate-slide-up { animation: slideUp 0.3s ease-out both; }
-  .animate-page-enter { animation: pageEnter 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .animate-page-enter { animation: pageEnter 0.18s cubic-bezier(0.22, 1, 0.36, 1) both; }
   .animate-nav-indicator { animation: navIndicator 0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
   .skeleton {
