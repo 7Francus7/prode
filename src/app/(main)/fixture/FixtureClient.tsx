@@ -129,13 +129,13 @@ export default function FixtureClient({
           Cambia de grupo, revisa posiciones y deja tus picks desde una sola vista.
         </p>
 
-        <div className="mt-5 flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5">
+        <div className="mt-5 grid grid-cols-6 gap-1.5">
           {GROUP_TABS.map((group) => (
             <button
               key={group}
               onClick={() => setActiveGroup(group)}
               className={cn(
-                "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl border text-xs font-bold transition-all",
+                "flex h-10 w-full items-center justify-center rounded-2xl border text-xs font-bold transition-all active:scale-[0.94]",
                 activeGroup === group
                   ? "text-white"
                   : "bg-black/10 text-slate-500 hover:border-slate-600 hover:text-slate-300"

@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { ViewTransitions } from "next-view-transitions";
 import SessionProvider from "@/components/SessionProvider";
 import SwRegister from "@/components/SwRegister";
+import SplashScreen from "@/components/SplashScreen";
 
 const bodyFont = Manrope({
   subsets: ["latin"],
@@ -29,6 +31,10 @@ export const viewport: Viewport = {
   themeColor: "#f6f7fb",
   width: "device-width",
   initialScale: 1,
+  // Bloquea el pinch-zoom y el doble-tap-zoom para un feel de app nativa
+  // y evita el paneo lateral de la página al hacer zoom.
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
 };
 
@@ -55,8 +61,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <SessionProvider>{children}</SessionProvider>
+        <ViewTransitions>
+          <SessionProvider>{children}</SessionProvider>
+        </ViewTransitions>
         <SwRegister />
+        <SplashScreen />
       </body>
     </html>
   );

@@ -81,8 +81,13 @@ export default function MatchCard({
     async (value: PredictionResult) => {
       if (predictionsClosed || !isAuthenticated || loading) return;
 
+      const previousPrediction = myPrediction;
+      // Optimista: marcamos la selección al instante para que el toque se sienta
+      // inmediato; si el guardado falla, revertimos al valor anterior.
+      setMyPrediction(value);
       setLoading(value);
       setPredError(null);
+      if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(8);
 
       try {
         const response = await fetch("/api/predictions", {
@@ -92,9 +97,9 @@ export default function MatchCard({
         });
 
         if (response.ok) {
-          setMyPrediction(value);
           onPredictionSuccess?.(match.id, value);
         } else {
+          setMyPrediction(previousPrediction);
           const body = await response.json().catch(() => ({})) as { error?: string };
           const message = body.error ?? "";
 
@@ -109,12 +114,13 @@ export default function MatchCard({
           }
         }
       } catch {
+        setMyPrediction(previousPrediction);
         setPredError("No se pudo guardar tu predicción. Intentá de nuevo.");
       } finally {
         setLoading(null);
       }
     },
-    [predictionsClosed, isAuthenticated, loading, match.id, onPredictionSuccess]
+    [predictionsClosed, isAuthenticated, loading, myPrediction, match.id, onPredictionSuccess]
   );
 
   const togglePicks = useCallback(async () => {

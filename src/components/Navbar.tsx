@@ -1,9 +1,11 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "next-view-transitions";
+import { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/ThemeToggle";
+import type { ComponentType } from "react";
 
 function IconHome() {
   return (
@@ -68,6 +70,50 @@ const NAVBAR_GLASS: React.CSSProperties = {
   WebkitBackdropFilter: "blur(20px) saturate(1.35)",
   borderColor: "var(--app-navbar-border)",
 };
+
+type NavItemType = { href: string; label: string; Icon: ComponentType };
+
+// Item del nav inferior (mobile). Usa useLinkStatus para resaltar la pestaña
+// apenas se toca —mientras la nueva ruta está "pending"— sin esperar a que
+// cargue, dando feedback instantáneo.
+function BottomNavItem({ item, active }: { item: NavItemType; active: boolean }) {
+  return (
+    <Link
+      href={item.href}
+      className="relative flex min-h-[64px] flex-col items-center justify-center gap-1 pt-2 pb-2 transition duration-200 active:scale-[0.94]"
+    >
+      <BottomNavContent item={item} active={active} />
+    </Link>
+  );
+}
+
+function BottomNavContent({ item, active }: { item: NavItemType; active: boolean }) {
+  const { pending } = useLinkStatus();
+  const show = active || pending;
+  const color = show ? "text-amber-200" : "text-slate-600";
+  return (
+    <>
+      {show && (
+        <>
+          <span className="absolute inset-0" style={{ background: "rgba(214,164,74,0.05)" }} />
+          <span
+            className="absolute top-0 left-1/2 h-[2px] w-8 -translate-x-1/2 rounded-full animate-nav-indicator"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(214,164,74,0) 0%, rgba(214,164,74,1) 50%, rgba(214,164,74,0) 100%)",
+            }}
+          />
+        </>
+      )}
+      <span className={cn("relative", color)}>
+        <item.Icon />
+      </span>
+      <span className={cn("relative text-[9px] font-bold uppercase tracking-[0.18em]", color)}>
+        {item.label}
+      </span>
+    </>
+  );
+}
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -157,34 +203,9 @@ export default function Navbar() {
         }}
       >
         <div className="grid grid-cols-5">
-          {NAV_ITEMS.map((item) => {
-            const active = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "relative flex min-h-[64px] flex-col items-center justify-center gap-1 pt-2 pb-2 transition duration-200 active:scale-[0.94]",
-                  active ? "text-amber-200" : "text-slate-600"
-                )}
-                style={active ? { background: "rgba(214,164,74,0.05)" } : {}}
-              >
-                {active && (
-                  <span
-                    className="absolute top-0 left-1/2 h-[2px] w-8 -translate-x-1/2 rounded-full animate-nav-indicator"
-                    style={{
-                      background:
-                        "linear-gradient(90deg, rgba(214,164,74,0) 0%, rgba(214,164,74,1) 50%, rgba(214,164,74,0) 100%)",
-                    }}
-                  />
-                )}
-                <item.Icon />
-                <span className="text-[9px] font-bold uppercase tracking-[0.18em]">
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
+          {NAV_ITEMS.map((item) => (
+            <BottomNavItem key={item.href} item={item} active={pathname === item.href} />
+          ))}
         </div>
       </nav>
     </>
