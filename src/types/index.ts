@@ -7,7 +7,10 @@ export type MatchWithTeams = Match & {
   group: Group | null;
   myPrediction?: PredictionResult | null;
   isLocked?: boolean;
+  predictionBreakdown?: PredictionBreakdown;
 };
+
+export type PredictionBreakdown = Record<PredictionResult, number>;
 
 export type PickEntry = {
   userId: string;
@@ -43,6 +46,7 @@ export type RankingEntry = {
   correctPredictions: number;
   totalPredictions: number;
   accuracy: number | null;
+  todayPoints?: number;
 };
 
 export type SyncResult = {

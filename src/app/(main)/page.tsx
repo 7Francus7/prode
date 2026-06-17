@@ -1,13 +1,12 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getPredictionBreakdowns, withPredictionBreakdown } from "@/lib/matchInsights";
 import { calculateAccuracy, getSharedRankByPoints } from "@/lib/ranking";
 import { isMatchLocked, isGlobalPredictionLocked } from "@/lib/utils";
 import MatchCard from "@/components/MatchCard";
 import StatsCards from "@/components/StatsCards";
 import MyPositionBanner from "@/components/MyPositionBanner";
 import { PoolBanner } from "@/components/PoolBanner";
-import { GlobalLockCountdown } from "@/components/GlobalLockCountdown";
-import PushNotificationCard from "@/components/PushNotificationCard";
 import LiveRefresher from "@/components/LiveRefresher";
 import ShareGroupCard from "@/components/ShareGroupCard";
 import Link from "next/link";
@@ -16,21 +15,51 @@ import type { ReactNode } from "react";
 import type { MatchWithTeams, RankingEntry } from "@/types";
 import type { PredictionResult } from "@prisma/client";
 
+function getArgentinaDayRange(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const value = (type: string) => parts.find((part) => part.type === type)?.value;
+  const day = `${value("year")}-${value("month")}-${value("day")}`;
+  const start = new Date(`${day}T03:00:00.000Z`);
+  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+  return { start, end };
+}
+
 async function getHomeData(userId: string) {
+  const today = getArgentinaDayRange();
   const [
     liveMatches,
+    todayMatches,
     nextMatches,
     ranking,
+    todayUsers,
     userRecord,
     correctCount,
     totalPredictions,
     resolvedPredictions,
     totalUsers,
-    openMatchesCount,
-    openPredictionsCount,
+    myTodayPoints,
+    groupTodayPoints,
   ] = await Promise.all([
     prisma.match.findMany({
       where: { status: "LIVE", groupId: { not: null } },
+      include: {
+        homeTeam: true,
+        awayTeam: true,
+        group: true,
+        predictions: { where: { userId }, take: 1 },
+      },
+      orderBy: { matchDate: "asc" },
+    }),
+    prisma.match.findMany({
+      where: {
+        groupId: { not: null },
+        matchDate: { gte: today.start, lt: today.end },
+      },
       include: {
         homeTeam: true,
         awayTeam: true,
@@ -52,33 +81,52 @@ async function getHomeData(userId: string) {
     }),
     prisma.user.findMany({
       where: { isAdmin: false, isBlocked: false },
-      select: { id: true, name: true, totalPoints: true },
+      select: { id: true, name: true, image: true, totalPoints: true },
       orderBy: { totalPoints: "desc" },
       take: 5,
+    }),
+    prisma.user.findMany({
+      where: { isAdmin: false, isBlocked: false },
+      select: {
+        id: true,
+        name: true,
+        image: true,
+        totalPoints: true,
+        predictionPoints: {
+          where: {
+            correct: true,
+            match: { matchDate: { gte: today.start, lt: today.end }, groupId: { not: null } },
+          },
+          select: { id: true },
+        },
+      },
     }),
     prisma.user.findUnique({ where: { id: userId }, select: { totalPoints: true } }),
     prisma.predictionPoints.count({ where: { userId, correct: true } }),
     prisma.prediction.count({ where: { userId } }),
     prisma.predictionPoints.count({ where: { userId } }),
     prisma.user.count({ where: { isAdmin: false, isBlocked: false } }),
-    prisma.match.count({
-      where: {
-        status: "SCHEDULED",
-        groupId: { not: null },
-        matchDate: { gt: new Date() },
-      },
-    }),
-    prisma.prediction.count({
+    prisma.predictionPoints.count({
       where: {
         userId,
-        match: {
-          status: "SCHEDULED",
-          groupId: { not: null },
-          matchDate: { gt: new Date() },
-        },
+        correct: true,
+        match: { matchDate: { gte: today.start, lt: today.end }, groupId: { not: null } },
+      },
+    }),
+    prisma.predictionPoints.count({
+      where: {
+        correct: true,
+        user: { isAdmin: false, isBlocked: false },
+        match: { matchDate: { gte: today.start, lt: today.end }, groupId: { not: null } },
       },
     }),
   ]);
+
+  const allMatches = [...liveMatches, ...todayMatches, ...nextMatches];
+  const breakdowns = await getPredictionBreakdowns(Array.from(new Set(allMatches.map((m) => m.id))));
+  const bestToday = todayUsers
+    .map((user) => ({ ...user, todayPoints: user.predictionPoints.length }))
+    .sort((a, b) => b.todayPoints - a.todayPoints || b.totalPoints - a.totalPoints)[0] ?? null;
 
   const totalPoints = userRecord?.totalPoints ?? 0;
   const userRank = userRecord
@@ -88,17 +136,19 @@ async function getHomeData(userId: string) {
     : 0;
 
   return {
-    liveMatches,
-    nextMatches,
+    liveMatches: liveMatches.map((match) => withPredictionBreakdown(match, breakdowns)),
+    todayMatches: todayMatches.map((match) => withPredictionBreakdown(match, breakdowns)),
+    nextMatches: nextMatches.map((match) => withPredictionBreakdown(match, breakdowns)),
     ranking,
+    bestToday,
     totalPoints,
     correctCount,
     userRank,
     totalPredictions,
     resolvedPredictions,
     totalUsers,
-    openMatchesCount,
-    openPredictionsCount,
+    myTodayPoints,
+    groupTodayPoints,
   };
 }
 
@@ -190,23 +240,37 @@ export default async function HomePage() {
 
   const {
     liveMatches,
+    todayMatches,
     nextMatches,
     ranking,
+    bestToday,
     totalPoints,
     correctCount,
     userRank,
     totalPredictions,
     resolvedPredictions,
     totalUsers,
-    openMatchesCount,
-    openPredictionsCount,
+    myTodayPoints,
+    groupTodayPoints,
   } = homeData;
 
   const globalLocked = isGlobalPredictionLocked();
   const rankingDisplayRanks = ranking.map((_, index) => getSharedRankByPoints(ranking, index));
   const inTopVisible = ranking.some((u) => u.id === userId);
   const pendingPredictions = Math.max(totalPredictions - resolvedPredictions, 0);
-  const missingOpenPredictions = Math.max(openMatchesCount - openPredictionsCount, 0);
+  const finishedToday = todayMatches.filter((match) => match.status === "FINISHED").length;
+  const liveOrTodayMatches = todayMatches.length > 0 ? todayMatches : liveMatches;
+  const topLeader = ranking[0] ?? null;
+  const leaderGap = topLeader && topLeader.id !== userId ? Math.max(topLeader.totalPoints - totalPoints, 0) : 0;
+  const strongestTodayMatch = liveOrTodayMatches
+    .map((match) => {
+      const breakdown = match.predictionBreakdown ?? { HOME: 0, DRAW: 0, AWAY: 0 };
+      const maxPick = (["HOME", "DRAW", "AWAY"] as PredictionResult[]).reduce((best, value) =>
+        breakdown[value] > breakdown[best] ? value : best
+      , "HOME" as PredictionResult);
+      return { match, maxPick, count: breakdown[maxPick] };
+    })
+    .sort((a, b) => b.count - a.count)[0] ?? null;
 
   const myEntry: RankingEntry | null = userRank > 0
     ? {
@@ -277,17 +341,17 @@ export default async function HomePage() {
 
             <div className="flex flex-wrap gap-2.5 pt-1">
               <Link
-                href="/predictions"
+                href="/fixture"
                 className="inline-flex min-h-[48px] items-center justify-center rounded-full px-5 text-[0.88rem] font-semibold text-white transition-transform hover:-translate-y-0.5"
                 style={{
                   background: "linear-gradient(135deg, #d6a44a 0%, #9a5f1d 100%)",
                   boxShadow: "0 16px 28px -16px rgba(214,164,74,0.78)",
                 }}
               >
-                Ver mis predicciones
+                Ver jornada
               </Link>
               <Link
-                href="/fixture"
+                href="/ranking"
                 className="inline-flex min-h-[48px] items-center justify-center rounded-full border px-5 text-[0.88rem] font-semibold transition-colors hover:[color:var(--app-text)]"
                 style={{
                   background: "var(--app-panel-soft-bg)",
@@ -296,7 +360,7 @@ export default async function HomePage() {
                   boxShadow: "inset 0 1px 0 rgba(255,255,255,0.42)",
                 }}
               >
-                Abrir fixture completo
+                Ver ranking
               </Link>
             </div>
 
@@ -338,10 +402,36 @@ export default async function HomePage() {
 
           <div className="grid gap-3">
             <div className="grid gap-3 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-              <GlobalLockCountdown />
+              <div className="grid gap-3 sm:grid-cols-3">
+                {[
+                  { eyebrow: "Hoy", value: `${finishedToday}/${todayMatches.length || 0}`, label: "finalizados" },
+                  { eyebrow: "Vos", value: `+${myTodayPoints}`, label: "puntos hoy" },
+                  { eyebrow: "Grupo", value: `+${groupTodayPoints}`, label: "aciertos hoy" },
+                ].map((stat) => (
+                  <div
+                    key={stat.eyebrow}
+                    className="rounded-[1.45rem] border px-3 py-4"
+                    style={{
+                      background: "var(--app-panel-bg)",
+                      borderColor: "var(--app-border)",
+                      boxShadow: "var(--app-panel-shadow)",
+                    }}
+                  >
+                    <p className="text-[0.56rem] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                      {stat.eyebrow}
+                    </p>
+                    <p className="mt-2 font-display text-[1.7rem] font-bold leading-none text-white">
+                      {stat.value}
+                    </p>
+                    <p className="mt-2 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
               <div className="grid gap-3">
                 {session.user.isPaid ? (
-                  <PushNotificationCard />
+                  <ShareGroupCard />
                 ) : (
                 <div
                   className="rounded-[1.7rem] border px-4 py-4"
@@ -364,7 +454,28 @@ export default async function HomePage() {
                   </p>
                 </div>
                 )}
-                <ShareGroupCard />
+                <div
+                  className="rounded-[1.7rem] border px-4 py-4"
+                  style={{
+                    background: "var(--app-panel-bg)",
+                    borderColor: "var(--app-border)",
+                    boxShadow: "var(--app-panel-shadow)",
+                  }}
+                >
+                  <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                    Resumen de jornada
+                  </p>
+                  <p className="mt-2 text-[1.1rem] font-semibold text-white">
+                    {bestToday && bestToday.todayPoints > 0
+                      ? `${bestToday.name ?? "Alguien"} manda hoy con +${bestToday.todayPoints}`
+                      : pendingPredictions > 0
+                        ? `${pendingPredictions} picks por resolver`
+                        : "Jornada lista para moverse"}
+                  </p>
+                  <p className="mt-1 text-[0.82rem] leading-relaxed text-slate-400">
+                    Picks cerrados. Ahora cada resultado mueve puntos, ranking y charla.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -387,17 +498,23 @@ export default async function HomePage() {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                  Antes del cierre
+                  Momento del grupo
                 </p>
                 <p className="mt-2 text-[1.1rem] font-semibold text-white">
-                  {missingOpenPredictions > 0
-                    ? `Te faltan ${missingOpenPredictions} picks por cargar`
-                    : "Ya dejaste cargados todos los picks abiertos"}
+                  {leaderGap > 0 && topLeader
+                    ? `${topLeader.name ?? "El lider"} esta a ${leaderGap} pts`
+                    : "Estas peleando arriba del todo"}
                 </p>
                 <p className="mt-1 text-[0.82rem] leading-relaxed text-slate-400">
-                  {openMatchesCount > 0
-                    ? `${openPredictionsCount} de ${openMatchesCount} partidos futuros ya tienen tu prediccion.`
-                    : "Todavia no hay partidos abiertos para completar."}
+                  {strongestTodayMatch && strongestTodayMatch.count > 0
+                    ? `${strongestTodayMatch.count} dependen de ${
+                        strongestTodayMatch.maxPick === "HOME"
+                          ? strongestTodayMatch.match.homeTeam.code
+                          : strongestTodayMatch.maxPick === "AWAY"
+                            ? strongestTodayMatch.match.awayTeam.code
+                            : "EMP"
+                      } en ${strongestTodayMatch.match.homeTeam.code}-${strongestTodayMatch.match.awayTeam.code}.`
+                    : "Cuando arranque la jornada aparece la tension por partido."}
                 </p>
               </div>
               <Link
@@ -409,24 +526,29 @@ export default async function HomePage() {
                   color: "var(--app-text-muted)",
                 }}
               >
-                Completar fixture
+                Ver fixture
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {liveMatches.length > 0 && (
-        <SectionShell eyebrow="Ahora" title="Partidos en vivo">
+      {liveOrTodayMatches.length > 0 && (
+        <SectionShell
+          eyebrow="En vivo"
+          title={todayMatches.length > 0 ? "Timeline de hoy" : "Partidos en vivo"}
+          href="/fixture"
+          hrefLabel="Ver todos"
+        >
           <div className="mb-4 flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-red-300">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
             </span>
-            Actualizando resultados
+            Picks cerrados, tabla en movimiento
           </div>
           <div className="space-y-3">
-            {liveMatches.map((m) => (
+            {liveOrTodayMatches.map((m) => (
               <MatchCard key={m.id} match={toMatchWithTeams(m)} isAuthenticated globalLocked={globalLocked} />
             ))}
           </div>

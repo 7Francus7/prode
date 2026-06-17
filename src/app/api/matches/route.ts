@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getPredictionBreakdowns, withPredictionBreakdown } from "@/lib/matchInsights";
 import { isMatchLocked } from "@/lib/utils";
 import type { MatchStatus } from "@prisma/client";
 
@@ -39,11 +40,13 @@ export async function GET(request: Request) {
     predictions?: { prediction: string }[];
   };
 
+  const breakdowns = await getPredictionBreakdowns(matches.map((match) => match.id));
+
   return NextResponse.json(
     matches.map((m) => {
       const mWithPreds = m as MatchWithPreds;
       return {
-        ...m,
+        ...withPredictionBreakdown(m, breakdowns),
         isLocked: isMatchLocked(m.matchDate, m.status),
         myPrediction: mWithPreds.predictions?.[0]?.prediction ?? null,
         predictions: undefined,

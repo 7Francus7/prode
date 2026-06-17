@@ -27,7 +27,7 @@ export default function RankingTable({
         <span className="text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-500">#</span>
         <span className="text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-500">Jugador</span>
         <span className="text-center text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-500">Pts</span>
-        <span className="hidden text-center text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-500 sm:block">Ac.</span>
+        <span className="text-center text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-500">Hoy</span>
         <span className="hidden text-center text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-500 sm:block">%</span>
       </div>
 
@@ -74,8 +74,11 @@ export default function RankingTable({
                 {entry.totalPoints}
               </span>
 
-              <span className="hidden text-center text-xs font-semibold text-emerald-300 sm:block">
-                {entry.correctPredictions}
+              <span className={cn(
+                "text-center text-xs font-semibold",
+                (entry.todayPoints ?? 0) > 0 ? "text-emerald-300" : "text-slate-700"
+              )}>
+                {(entry.todayPoints ?? 0) > 0 ? `+${entry.todayPoints}` : "="}
               </span>
 
               <span className="hidden text-center text-xs text-slate-400 sm:block">

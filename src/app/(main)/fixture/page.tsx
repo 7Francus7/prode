@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getPredictionBreakdowns, withPredictionBreakdown } from "@/lib/matchInsights";
 import { buildGroupStandings } from "@/lib/standings";
 import { isGlobalPredictionLocked, isMatchLocked } from "@/lib/utils";
 import { redirect } from "next/navigation";
@@ -45,8 +46,10 @@ async function getFixtureData(userId: string, groupName: string) {
     }),
   ]);
 
+  const breakdowns = await getPredictionBreakdowns(matches.map((match) => match.id));
+
   return {
-    matches,
+    matches: matches.map((match) => withPredictionBreakdown(match, breakdowns)),
     standings: group ? buildGroupStandings(group) : [],
   };
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { Lock, Users } from "lucide-react";
 import { cn, formatMatchDate, getFlagEmoji, getGlobalLockDateISO, isMatchLocked } from "@/lib/utils";
 import Countdown from "./Countdown";
 import StatusBadge from "./StatusBadge";
@@ -27,6 +28,73 @@ const PICK_COLORS: Record<PredictionResult, string> = {
   DRAW: "bg-amber-500/15 text-amber-400 border-amber-500/25",
   AWAY: "bg-violet-600/15 text-violet-400 border-violet-600/25",
 };
+
+const OUTCOME_STYLES: Record<PredictionResult, string> = {
+  HOME: "border-blue-500/30 bg-blue-500/10 text-blue-300",
+  DRAW: "border-amber-500/30 bg-amber-500/10 text-amber-300",
+  AWAY: "border-violet-500/30 bg-violet-500/10 text-violet-300",
+};
+
+function OutcomeStrip({
+  match,
+  myPrediction,
+  winner,
+  finished,
+}: {
+  match: MatchWithTeams;
+  myPrediction: PredictionResult | null;
+  winner: PredictionResult | null;
+  finished: boolean;
+}) {
+  const breakdown = match.predictionBreakdown ?? { HOME: 0, DRAW: 0, AWAY: 0 };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
+          <Lock size={12} />
+          Ticket sellado
+        </span>
+        <span className="text-[10px] font-semibold text-slate-600">
+          {myPrediction ? "Tu pick marcado" : "Sin pick cargado"}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-3 gap-1.5">
+        {(["HOME", "DRAW", "AWAY"] as PredictionResult[]).map((value) => {
+          const selected = myPrediction === value;
+          const correct = finished && winner === value;
+          const wrong = finished && selected && winner !== value;
+
+          return (
+            <div
+              key={value}
+              className={cn(
+                "relative min-h-[46px] rounded-xl border px-2 py-2 text-center transition-colors",
+                selected ? OUTCOME_STYLES[value] : "border-brand-border/60 bg-black/10 text-slate-600",
+                correct && "border-emerald-500/35 bg-emerald-500/12 text-emerald-300",
+                wrong && "border-red-500/25 bg-red-500/8 text-red-300"
+              )}
+            >
+              <p className="truncate text-[10px] font-black uppercase tracking-[0.12em]">
+                {value === "HOME" ? match.homeTeam.code : value === "AWAY" ? match.awayTeam.code : "Empate"}
+              </p>
+              <p className="mt-1 inline-flex items-center justify-center gap-1 text-[10px] font-semibold text-slate-500">
+                <Users size={11} />
+                {breakdown[value]} suman
+              </p>
+              {selected && (
+                <span className="absolute -right-1 -top-1 rounded-full border border-white/10 bg-brand-card px-1.5 py-0.5 text-[8px] font-black uppercase tracking-[0.12em] text-amber-300">
+                  vos
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 function Avatar({ name, image }: { name: string | null; image: string | null }) {
   if (image) {
@@ -141,6 +209,7 @@ export default function MatchCard({
   const awayWon = finished && winner === "AWAY";
   const isDraw = finished && winner === "DRAW";
   const venueLabel = [match.stadium, match.city].filter(Boolean).join(" · ") || "Sede por confirmar";
+  const showSealedTicket = predictionsClosed || matchStarted;
 
   return (
     <div
@@ -243,6 +312,13 @@ export default function MatchCard({
               <p className="text-center text-[11px] text-slate-600 py-1">
                 Iniciá sesión para predecir
               </p>
+            ) : showSealedTicket ? (
+              <OutcomeStrip
+                match={match}
+                myPrediction={myPrediction}
+                winner={winner}
+                finished={finished}
+              />
             ) : (
               <>
                 {!predictionsClosed && (

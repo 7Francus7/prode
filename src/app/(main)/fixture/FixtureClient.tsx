@@ -126,7 +126,7 @@ export default function FixtureClient({
           Fixture
         </h1>
         <p className="mt-2 max-w-[34rem] text-sm leading-relaxed text-slate-400">
-          Cambia de grupo, revisa posiciones y deja tus picks desde una sola vista.
+          Cambia de grupo, segui resultados y revisa tus picks sellados desde una sola vista.
         </p>
 
         <div className="mt-5 grid grid-cols-6 gap-1.5">
