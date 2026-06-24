@@ -29,6 +29,18 @@ const PICK_COLORS: Record<PredictionResult, string> = {
   AWAY: "bg-violet-600/15 text-violet-400 border-violet-600/25",
 };
 
+const PICK_GLOW: Record<PredictionResult, string> = {
+  HOME: "shadow-[inset_0_1px_0_rgba(96,165,250,0.16),0_10px_24px_-18px_rgba(59,130,246,0.85)]",
+  DRAW: "shadow-[inset_0_1px_0_rgba(251,191,36,0.16),0_10px_24px_-18px_rgba(245,158,11,0.8)]",
+  AWAY: "shadow-[inset_0_1px_0_rgba(167,139,250,0.16),0_10px_24px_-18px_rgba(124,58,237,0.82)]",
+};
+
+const PICK_STRIP: Record<PredictionResult, string> = {
+  HOME: "bg-blue-400/80",
+  DRAW: "bg-amber-300/80",
+  AWAY: "bg-violet-400/80",
+};
+
 const OUTCOME_STYLES: Record<PredictionResult, string> = {
   HOME: "border-blue-500/30 bg-blue-500/10 text-blue-300",
   DRAW: "border-amber-500/30 bg-amber-500/10 text-amber-300",
@@ -112,7 +124,7 @@ function Avatar({ name, image }: { name: string | null; image: string | null }) 
       <img
         src={image}
         alt={name ?? ""}
-        className="w-6 h-6 rounded-full object-cover shrink-0"
+        className="h-8 w-8 shrink-0 rounded-full border border-white/10 object-cover shadow-[0_8px_18px_-12px_rgba(255,255,255,0.35)]"
       />
     );
   }
@@ -125,7 +137,7 @@ function Avatar({ name, image }: { name: string | null; image: string | null }) 
     .toUpperCase();
 
   return (
-    <div className="w-6 h-6 rounded-full bg-brand-card-2 border border-brand-border flex items-center justify-center text-[9px] font-black text-slate-400 shrink-0">
+    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.08] text-[10px] font-black text-slate-200 shadow-[0_8px_18px_-12px_rgba(255,255,255,0.3)]">
       {initials}
     </div>
   );
@@ -160,7 +172,7 @@ export default function MatchCard({
       if (predictionsClosed || !isAuthenticated || loading) return;
 
       const previousPrediction = myPrediction;
-      // Optimista: marcamos la selección al instante para que el toque se sienta
+      // Optimista: marcamos la seleccion al instante para que el toque se sienta
       // inmediato; si el guardado falla, revertimos al valor anterior.
       setMyPrediction(value);
       setLoading(value);
@@ -178,22 +190,22 @@ export default function MatchCard({
           onPredictionSuccess?.(match.id, value);
         } else {
           setMyPrediction(previousPrediction);
-          const body = await response.json().catch(() => ({})) as { error?: string };
+          const body = (await response.json().catch(() => ({}))) as { error?: string };
           const message = body.error ?? "";
 
           if (response.status === 403 && message.includes("Pago")) {
-            setPredError("Tu acceso todavía no está activo.");
+            setPredError("Tu acceso todavia no esta activo.");
           } else if (response.status === 403 && message.includes("cerrad")) {
             setPredError("Las predicciones ya cerraron.");
           } else if (response.status === 403) {
             setPredError("Este partido ya no acepta predicciones.");
           } else {
-            setPredError("No se pudo guardar. Intentá de nuevo.");
+            setPredError("No se pudo guardar. Intenta de nuevo.");
           }
         }
       } catch {
         setMyPrediction(previousPrediction);
-        setPredError("No se pudo guardar tu predicción. Intentá de nuevo.");
+        setPredError("No se pudo guardar tu prediccion. Intenta de nuevo.");
       } finally {
         setLoading(null);
       }
@@ -237,19 +249,19 @@ export default function MatchCard({
   return (
     <div
       className={cn(
-        "rounded-2xl border bg-brand-card overflow-hidden",
+        "overflow-hidden rounded-2xl border bg-brand-card",
         isLive
           ? "border-red-800/40 shadow-[0_0_24px_rgba(239,68,68,0.05)]"
           : "border-brand-border"
       )}
     >
       <div className="flex items-center justify-between px-4 pt-3.5 pb-0">
-        <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-[0.14em]">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">
           {match.group ? match.group.label : match.round}
         </span>
         <div className="flex items-center gap-2">
           {!isGroupStage && (
-            <span className="text-[9px] font-semibold text-slate-600 bg-brand-card-2 border border-brand-border rounded-full px-2 py-0.5 uppercase tracking-wider">
+            <span className="rounded-full border border-brand-border bg-brand-card-2 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-slate-600">
               Sin prode
             </span>
           )}
@@ -259,7 +271,7 @@ export default function MatchCard({
 
       <div className="px-4 pt-3 pb-3">
         <div className="flex items-center">
-          <div className="flex-1 flex flex-col items-center gap-1.5">
+          <div className="flex flex-1 flex-col items-center gap-1.5">
             <span className="text-[40px] leading-none">{getFlagEmoji(match.homeTeam.flagCode)}</span>
             <span
               className={cn(
@@ -269,26 +281,26 @@ export default function MatchCard({
             >
               {match.homeTeam.code}
             </span>
-            <span className="text-[10px] text-slate-600 text-center leading-tight line-clamp-1 px-1 w-full">
+            <span className="w-full px-1 text-center text-[10px] leading-tight text-slate-600 line-clamp-1">
               {match.homeTeam.name}
             </span>
           </div>
 
-          <div className="flex flex-col items-center gap-1.5 min-w-[84px]">
+          <div className="flex min-w-[84px] flex-col items-center gap-1.5">
             {finished || isLive ? (
               <div className="flex items-center gap-2.5">
                 <span
                   className={cn(
-                    "text-[28px] font-black tabular-nums leading-none",
+                    "text-[28px] font-black leading-none tabular-nums",
                     homeWon ? "text-emerald-400" : isDraw ? "text-amber-400" : finished ? "text-slate-600" : "text-white"
                   )}
                 >
                   {match.homeScore ?? 0}
                 </span>
-                <span className="text-slate-700 font-light text-xl">—</span>
+                <span className="text-xl font-light text-slate-700">-</span>
                 <span
                   className={cn(
-                    "text-[28px] font-black tabular-nums leading-none",
+                    "text-[28px] font-black leading-none tabular-nums",
                     awayWon ? "text-emerald-400" : isDraw ? "text-amber-400" : finished ? "text-slate-600" : "text-white"
                   )}
                 >
@@ -296,14 +308,14 @@ export default function MatchCard({
                 </span>
               </div>
             ) : (
-              <span className="text-[22px] font-black text-slate-800 tracking-widest leading-none">vs</span>
+              <span className="text-[22px] font-black leading-none tracking-widest text-slate-800">vs</span>
             )}
-            <span className="text-[10px] text-slate-600 leading-none text-center whitespace-nowrap">
+            <span className="whitespace-nowrap text-center text-[10px] leading-none text-slate-600">
               {formatMatchDate(match.matchDate)}
             </span>
           </div>
 
-          <div className="flex-1 flex flex-col items-center gap-1.5">
+          <div className="flex flex-1 flex-col items-center gap-1.5">
             <span className="text-[40px] leading-none">{getFlagEmoji(match.awayTeam.flagCode)}</span>
             <span
               className={cn(
@@ -313,27 +325,27 @@ export default function MatchCard({
             >
               {match.awayTeam.code}
             </span>
-            <span className="text-[10px] text-slate-600 text-center leading-tight line-clamp-1 px-1 w-full">
+            <span className="w-full px-1 text-center text-[10px] leading-tight text-slate-600 line-clamp-1">
               {match.awayTeam.name}
             </span>
           </div>
         </div>
 
-        <p className="text-center text-[10px] text-slate-700 mt-2.5 truncate px-4">
+        <p className="mt-2.5 truncate px-4 text-center text-[10px] text-slate-700">
           {venueLabel}
         </p>
       </div>
 
       {showPrediction && (
-        <div className="px-3 pb-3 border-t border-brand-border">
+        <div className="border-t border-brand-border px-3 pb-3">
           <div className="pt-2.5">
             {!isGroupStage ? (
-              <p className="text-center text-[11px] text-slate-700 py-1">
+              <p className="py-1 text-center text-[11px] text-slate-700">
                 No participa en el prode
               </p>
             ) : !isAuthenticated ? (
-              <p className="text-center text-[11px] text-slate-600 py-1">
-                Iniciá sesión para predecir
+              <p className="py-1 text-center text-[11px] text-slate-600">
+                Inicia sesion para predecir
               </p>
             ) : showSealedTicket ? (
               <OutcomeStrip
@@ -350,7 +362,7 @@ export default function MatchCard({
                   </div>
                 )}
                 {predictionsClosed && !finished && !myPrediction ? (
-                  <p className="text-center text-[11px] text-slate-700 py-1 flex items-center justify-center gap-1.5">
+                  <p className="flex items-center justify-center gap-1.5 py-1 text-center text-[11px] text-slate-700">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="11" width="18" height="11" rx="2" />
                       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
@@ -375,7 +387,7 @@ export default function MatchCard({
                       ))}
                     </div>
                     {predError && (
-                      <p className="text-[10px] text-red-400 text-center mt-2 animate-fade-in">
+                      <p className="mt-2 animate-fade-in text-center text-[10px] text-red-400">
                         {predError}
                       </p>
                     )}
@@ -388,41 +400,43 @@ export default function MatchCard({
       )}
 
       {isGroupStage && isAuthenticated && (
-        <div className="border-t border-brand-border bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.08),transparent_45%),linear-gradient(180deg,rgba(15,23,42,0.88),rgba(2,6,23,0.98))]">
+        <div className="border-t border-brand-border bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.1),transparent_40%),linear-gradient(180deg,rgba(17,24,39,0.94),rgba(8,13,29,1))]">
           <button
             onClick={togglePicks}
-            className="w-full px-4 py-3 flex items-center justify-between gap-3 text-[11px] text-slate-500 hover:text-slate-200 transition-colors"
+            className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-[11px] text-slate-400 transition-colors hover:text-slate-100"
           >
             <div className="flex min-w-0 items-center gap-2.5">
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 shadow-[0_0_18px_rgba(59,130,246,0.08)]">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/[0.07] text-slate-100 shadow-[0_10px_24px_-16px_rgba(59,130,246,0.45)]">
                 <Users size={13} />
               </span>
               <div className="min-w-0 text-left">
-                <span className="block font-semibold uppercase tracking-[0.18em]">
+                <span className="block font-semibold uppercase tracking-[0.22em] text-slate-200">
                   {picksLoading ? "Cargando..." : `Picks${picks ? ` (${picks.length})` : ""}`}
                 </span>
-                <span className="block truncate text-[10px] text-slate-600">
-                  {leadingPickLabel ? `La mesa se inclina por ${leadingPickLabel}` : "Abrí el panel para ver cómo viene la mesa"}
+                <span className="block truncate pt-0.5 text-[10px] text-slate-500">
+                  {leadingPickLabel ? `La mesa se inclina por ${leadingPickLabel}` : "Abri el panel para ver como viene la mesa"}
                 </span>
               </div>
             </div>
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className={cn("transition-transform", showPicks ? "rotate-180" : "")}
-            >
-              <path d="M6 9l6 6 6-6" />
-            </svg>
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/8 bg-black/10">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={cn("transition-transform", showPicks ? "rotate-180" : "")}
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </span>
           </button>
 
           {showPicks && picks !== null && (
-            <div className="px-3 pb-3 space-y-2.5 animate-slide-up">
+            <div className="animate-slide-up space-y-3 px-3 pb-3">
               <div className="grid grid-cols-3 gap-2">
                 {(["HOME", "DRAW", "AWAY"] as PredictionResult[]).map((value) => {
                   const label = value === "HOME" ? match.homeTeam.code : value === "AWAY" ? match.awayTeam.code : "Emp";
@@ -430,51 +444,72 @@ export default function MatchCard({
                     <div
                       key={value}
                       className={cn(
-                        "rounded-xl border px-2 py-2 text-center",
+                        "rounded-[1rem] border px-2 py-2.5 text-center",
                         PICK_COLORS[value],
-                        pickBreakdown[value] === 0 && "border-white/6 bg-white/[0.03] text-slate-600"
+                        PICK_GLOW[value],
+                        pickBreakdown[value] === 0 && "border-white/6 bg-white/[0.03] text-slate-600 shadow-none"
                       )}
                     >
-                      <p className="text-[9px] font-black uppercase tracking-[0.16em]">{label}</p>
-                      <p className="mt-1 text-sm font-black tabular-nums">{pickBreakdown[value]}</p>
+                      <div className={cn("mx-auto mb-2 h-[2px] w-8 rounded-full", pickBreakdown[value] === 0 ? "bg-white/8" : PICK_STRIP[value])} />
+                      <p className="text-[9px] font-black uppercase tracking-[0.18em]">{label}</p>
+                      <p className="mt-1 text-[1.05rem] font-black tabular-nums">{pickBreakdown[value]}</p>
                     </div>
                   );
                 })}
               </div>
 
               {picks.length === 0 ? (
-                <p className="rounded-xl border border-dashed border-white/10 bg-black/10 py-3 text-center text-[11px] text-slate-700">
+                <p className="rounded-[1rem] border border-dashed border-white/10 bg-black/10 py-3 text-center text-[11px] text-slate-600">
                   Nadie predijo este partido
                 </p>
               ) : (
-                picks.map((pick) => (
-                  <div
-                    key={pick.userId}
-                    className="flex items-center gap-2.5 rounded-xl border border-white/6 bg-white/[0.03] px-2.5 py-2"
-                  >
-                    <Avatar name={pick.name} image={pick.image} />
-                    <span className="flex-1 text-[12px] text-slate-300 font-medium truncate">
-                      {pick.name ?? "Anónimo"}
-                    </span>
-                    <span
-                      className={cn(
-                        "text-[10px] font-bold border rounded-full px-2 py-0.5 uppercase tracking-wide",
-                        PICK_COLORS[pick.prediction]
-                      )}
+                <div className="space-y-2">
+                  {picks.map((pick) => (
+                    <div
+                      key={pick.userId}
+                      className="relative overflow-hidden rounded-[1rem] border border-white/7 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] px-3 py-2.5 shadow-[0_14px_30px_-24px_rgba(0,0,0,0.95)]"
                     >
-                      {pick.prediction === "HOME"
-                        ? match.homeTeam.code
-                        : pick.prediction === "AWAY"
-                          ? match.awayTeam.code
-                          : "Emp"}
-                    </span>
-                    {finished && pick.correct !== null && (
-                      <span className={cn("text-[13px]", pick.correct ? "text-emerald-400" : "text-red-500")}>
-                        {pick.correct ? "✓" : "✗"}
-                      </span>
-                    )}
-                  </div>
-                ))
+                      <div className={cn("absolute inset-y-2 left-0 w-[3px] rounded-r-full", PICK_STRIP[pick.prediction])} />
+                      <div className="flex items-center gap-2.5">
+                        <Avatar name={pick.name} image={pick.image} />
+                        <div className="min-w-0 flex-1">
+                          <span className="block truncate text-[12px] font-semibold text-slate-100">
+                            {pick.name ?? "Anonimo"}
+                          </span>
+                          <span className="block pt-0.5 text-[10px] uppercase tracking-[0.16em] text-slate-500">
+                            pick confirmado
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={cn(
+                              "rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]",
+                              PICK_COLORS[pick.prediction]
+                            )}
+                          >
+                            {pick.prediction === "HOME"
+                              ? match.homeTeam.code
+                              : pick.prediction === "AWAY"
+                                ? match.awayTeam.code
+                                : "Emp"}
+                          </span>
+                          {finished && pick.correct !== null && (
+                            <span
+                              className={cn(
+                                "inline-flex h-6 w-6 items-center justify-center rounded-full border text-[12px] font-bold",
+                                pick.correct
+                                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                                  : "border-red-500/30 bg-red-500/10 text-red-300"
+                              )}
+                            >
+                              {pick.correct ? "✓" : "x"}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           )}
