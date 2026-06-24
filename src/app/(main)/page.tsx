@@ -2,13 +2,11 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getPredictionBreakdowns, withPredictionBreakdown } from "@/lib/matchInsights";
 import { calculateAccuracy, getSharedRankByPoints } from "@/lib/ranking";
-import { isMatchLocked, isGlobalPredictionLocked } from "@/lib/utils";
+import { isGlobalPredictionLocked, isMatchLocked } from "@/lib/utils";
 import MatchCard from "@/components/MatchCard";
 import StatsCards from "@/components/StatsCards";
 import MyPositionBanner from "@/components/MyPositionBanner";
-import { PoolBanner } from "@/components/PoolBanner";
 import LiveRefresher from "@/components/LiveRefresher";
-import ShareGroupCard from "@/components/ShareGroupCard";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
@@ -36,7 +34,6 @@ async function getHomeData(userId: string) {
     todayMatches,
     nextMatches,
     ranking,
-    todayUsers,
     userRecord,
     correctCount,
     totalPredictions,
@@ -85,22 +82,6 @@ async function getHomeData(userId: string) {
       orderBy: { totalPoints: "desc" },
       take: 5,
     }),
-    prisma.user.findMany({
-      where: { isAdmin: false, isBlocked: false },
-      select: {
-        id: true,
-        name: true,
-        image: true,
-        totalPoints: true,
-        predictionPoints: {
-          where: {
-            correct: true,
-            match: { matchDate: { gte: today.start, lt: today.end }, groupId: { not: null } },
-          },
-          select: { id: true },
-        },
-      },
-    }),
     prisma.user.findUnique({ where: { id: userId }, select: { totalPoints: true } }),
     prisma.predictionPoints.count({ where: { userId, correct: true } }),
     prisma.prediction.count({ where: { userId } }),
@@ -124,9 +105,6 @@ async function getHomeData(userId: string) {
 
   const allMatches = [...liveMatches, ...todayMatches, ...nextMatches];
   const breakdowns = await getPredictionBreakdowns(Array.from(new Set(allMatches.map((m) => m.id))));
-  const bestToday = todayUsers
-    .map((user) => ({ ...user, todayPoints: user.predictionPoints.length }))
-    .sort((a, b) => b.todayPoints - a.todayPoints || b.totalPoints - a.totalPoints)[0] ?? null;
 
   const totalPoints = userRecord?.totalPoints ?? 0;
   const userRank = userRecord
@@ -140,7 +118,6 @@ async function getHomeData(userId: string) {
     todayMatches: todayMatches.map((match) => withPredictionBreakdown(match, breakdowns)),
     nextMatches: nextMatches.map((match) => withPredictionBreakdown(match, breakdowns)),
     ranking,
-    bestToday,
     totalPoints,
     correctCount,
     userRank,
@@ -153,13 +130,13 @@ async function getHomeData(userId: string) {
 }
 
 function toMatchWithTeams(
-  m: Awaited<ReturnType<typeof getHomeData>>["nextMatches"][number]
+  match: Awaited<ReturnType<typeof getHomeData>>["nextMatches"][number]
 ): MatchWithTeams {
-  const pred = m.predictions[0];
+  const prediction = match.predictions[0];
   return {
-    ...m,
-    isLocked: isMatchLocked(m.matchDate, m.status),
-    myPrediction: pred ? (pred.prediction as PredictionResult) : null,
+    ...match,
+    isLocked: isMatchLocked(match.matchDate, match.status),
+    myPrediction: prediction ? (prediction.prediction as PredictionResult) : null,
   } as MatchWithTeams;
 }
 
@@ -167,7 +144,7 @@ function getInitials(name: string | null | undefined) {
   if (!name) return "?";
   return name
     .split(" ")
-    .map((n) => n[0])
+    .map((value) => value[0])
     .join("")
     .toUpperCase()
     .slice(0, 2);
@@ -224,6 +201,7 @@ function SectionShell({
 export default async function HomePage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
+
   const userId = session.user.id;
 
   let homeData;
@@ -233,7 +211,7 @@ export default async function HomePage() {
     console.error("[home] error:", err);
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <p className="text-sm text-slate-500">Error al cargar datos. Intentá de nuevo.</p>
+        <p className="text-sm text-slate-500">Error al cargar datos. Intenta de nuevo.</p>
       </div>
     );
   }
@@ -243,7 +221,6 @@ export default async function HomePage() {
     todayMatches,
     nextMatches,
     ranking,
-    bestToday,
     totalPoints,
     correctCount,
     userRank,
@@ -256,21 +233,13 @@ export default async function HomePage() {
 
   const globalLocked = isGlobalPredictionLocked();
   const rankingDisplayRanks = ranking.map((_, index) => getSharedRankByPoints(ranking, index));
-  const inTopVisible = ranking.some((u) => u.id === userId);
+  const inTopVisible = ranking.some((user) => user.id === userId);
   const pendingPredictions = Math.max(totalPredictions - resolvedPredictions, 0);
   const finishedToday = todayMatches.filter((match) => match.status === "FINISHED").length;
   const liveOrTodayMatches = todayMatches.length > 0 ? todayMatches : liveMatches;
+  const featuredMatches = liveOrTodayMatches.length > 0 ? liveOrTodayMatches : nextMatches.slice(0, 2);
   const topLeader = ranking[0] ?? null;
   const leaderGap = topLeader && topLeader.id !== userId ? Math.max(topLeader.totalPoints - totalPoints, 0) : 0;
-  const strongestTodayMatch = liveOrTodayMatches
-    .map((match) => {
-      const breakdown = match.predictionBreakdown ?? { HOME: 0, DRAW: 0, AWAY: 0 };
-      const maxPick = (["HOME", "DRAW", "AWAY"] as PredictionResult[]).reduce((best, value) =>
-        breakdown[value] > breakdown[best] ? value : best
-      , "HOME" as PredictionResult);
-      return { match, maxPick, count: breakdown[maxPick] };
-    })
-    .sort((a, b) => b.count - a.count)[0] ?? null;
 
   const myEntry: RankingEntry | null = userRank > 0
     ? {
@@ -286,11 +255,12 @@ export default async function HomePage() {
     : null;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <LiveRefresher
         hasLive={liveMatches.length > 0}
         nextKickoffISO={nextMatches[0]?.matchDate.toISOString() ?? null}
       />
+
       <section
         className="relative overflow-hidden rounded-[2.15rem] border px-4 py-5 sm:px-6 sm:py-6"
         style={{
@@ -315,29 +285,28 @@ export default async function HomePage() {
           style={{ background: "rgba(59,130,246,0.14)" }}
         />
 
-        <div className="relative space-y-6">
+        <div className="relative space-y-5">
           <div className="space-y-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span
-                className="inline-flex items-center rounded-full px-3.5 py-1.5 text-[0.62rem] font-semibold uppercase tracking-[0.26em]"
-                style={{
-                  color: "var(--app-accent-strong)",
-                  background: "rgba(245,158,11,0.1)",
-                  border: "1px solid rgba(245,158,11,0.16)",
-                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.45)",
-                }}
-              >
-                Mundial 2026
-              </span>
-            </div>
+            <span
+              className="inline-flex items-center rounded-full px-3.5 py-1.5 text-[0.62rem] font-semibold uppercase tracking-[0.26em]"
+              style={{
+                color: "var(--app-accent-strong)",
+                background: "rgba(245,158,11,0.1)",
+                border: "1px solid rgba(245,158,11,0.16)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.45)",
+              }}
+            >
+              Mundial 2026
+            </span>
 
-            <div className="max-w-[34rem]">
+            <div className="max-w-[34rem] space-y-3">
               <h1 className="font-display text-[2.45rem] font-bold leading-[0.92] text-white sm:text-[3rem]">
                 Prode <span style={{ color: "var(--app-accent-strong)" }}>Mundial 2026</span>
               </h1>
+              <p className="max-w-[28rem] text-[0.92rem] leading-relaxed text-slate-300">
+                Tus picks, la jornada y el ranking en una sola vista. Sin vueltas.
+              </p>
             </div>
-
-            <PoolBanner />
 
             <div className="flex flex-wrap gap-2.5 pt-1">
               <Link
@@ -348,7 +317,7 @@ export default async function HomePage() {
                   boxShadow: "0 16px 28px -16px rgba(214,164,74,0.78)",
                 }}
               >
-                Ver jornada
+                Ver fixture
               </Link>
               <Link
                 href="/ranking"
@@ -373,7 +342,7 @@ export default async function HomePage() {
                   color: "var(--app-text-muted)",
                 }}
               >
-                {totalUsers} jugadores en carrera
+                {totalUsers} jugadores
               </span>
               <span
                 className="inline-flex items-center rounded-full px-3 py-1.5 text-[0.72rem] font-semibold"
@@ -400,89 +369,9 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="grid gap-3">
-            <div className="grid gap-3 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-              <div className="grid gap-3 sm:grid-cols-3">
-                {[
-                  { eyebrow: "Hoy", value: `${finishedToday}/${todayMatches.length || 0}`, label: "finalizados" },
-                  { eyebrow: "Vos", value: `+${myTodayPoints}`, label: "puntos hoy" },
-                  { eyebrow: "Grupo", value: `+${groupTodayPoints}`, label: "aciertos hoy" },
-                ].map((stat) => (
-                  <div
-                    key={stat.eyebrow}
-                    className="rounded-[1.45rem] border px-3 py-4"
-                    style={{
-                      background: "var(--app-panel-bg)",
-                      borderColor: "var(--app-border)",
-                      boxShadow: "var(--app-panel-shadow)",
-                    }}
-                  >
-                    <p className="text-[0.56rem] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                      {stat.eyebrow}
-                    </p>
-                    <p className="mt-2 font-display text-[1.7rem] font-bold leading-none text-white">
-                      {stat.value}
-                    </p>
-                    <p className="mt-2 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                      {stat.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <div className="grid gap-3">
-                {session.user.isPaid ? (
-                  <ShareGroupCard />
-                ) : (
-                <div
-                  className="rounded-[1.7rem] border px-4 py-4"
-                  style={{
-                    background: "var(--app-panel-bg)",
-                    borderColor: "var(--app-border)",
-                    boxShadow: "var(--app-panel-shadow)",
-                  }}
-                >
-                  <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                    Estado de juego
-                  </p>
-                  <p className="mt-2 text-[1.1rem] font-semibold text-white">
-                    {pendingPredictions > 0
-                      ? `${pendingPredictions} pendientes por resolver`
-                      : "Todas tus predicciones están al día"}
-                  </p>
-                  <p className="mt-1 text-[0.82rem] leading-relaxed text-slate-400">
-                    Cuando se resuelvan los partidos, tu efectividad y tu posición se actualizan automáticamente.
-                  </p>
-                </div>
-                )}
-                <div
-                  className="rounded-[1.7rem] border px-4 py-4"
-                  style={{
-                    background: "var(--app-panel-bg)",
-                    borderColor: "var(--app-border)",
-                    boxShadow: "var(--app-panel-shadow)",
-                  }}
-                >
-                  <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                    Resumen de jornada
-                  </p>
-                  <p className="mt-2 text-[1.1rem] font-semibold text-white">
-                    {bestToday && bestToday.todayPoints > 0
-                      ? `${bestToday.name ?? "Alguien"} manda hoy con +${bestToday.todayPoints}`
-                      : pendingPredictions > 0
-                        ? `${pendingPredictions} picks por resolver`
-                        : "Jornada lista para moverse"}
-                  </p>
-                  <p className="mt-1 text-[0.82rem] leading-relaxed text-slate-400">
-                    Picks cerrados. Ahora cada resultado mueve puntos, ranking y charla.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <div>
             <p className="mb-2 text-[0.62rem] font-semibold uppercase tracking-[0.24em] text-slate-500">
-              Tu campaña
+              Tu campana
             </p>
             <StatsCards totalPoints={totalPoints} correctCount={correctCount} rank={userRank} />
           </div>
@@ -495,95 +384,71 @@ export default async function HomePage() {
               boxShadow: "var(--app-panel-shadow)",
             }}
           >
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
+            <div className="grid gap-4 sm:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+              <div className="min-w-0">
                 <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                  Momento del grupo
+                  Ahora
                 </p>
                 <p className="mt-2 text-[1.1rem] font-semibold text-white">
-                  {leaderGap > 0 && topLeader
-                    ? `${topLeader.name ?? "El lider"} esta a ${leaderGap} pts`
-                    : "Estas peleando arriba del todo"}
+                  {pendingPredictions > 0
+                    ? `${pendingPredictions} picks tuyos siguen abiertos`
+                    : "Ya no tenes picks pendientes por resolver"}
                 </p>
                 <p className="mt-1 text-[0.82rem] leading-relaxed text-slate-400">
-                  {strongestTodayMatch && strongestTodayMatch.count > 0
-                    ? `${strongestTodayMatch.count} dependen de ${
-                        strongestTodayMatch.maxPick === "HOME"
-                          ? strongestTodayMatch.match.homeTeam.code
-                          : strongestTodayMatch.maxPick === "AWAY"
-                            ? strongestTodayMatch.match.awayTeam.code
-                            : "EMP"
-                      } en ${strongestTodayMatch.match.homeTeam.code}-${strongestTodayMatch.match.awayTeam.code}.`
-                    : "Cuando arranque la jornada aparece la tension por partido."}
+                  {todayMatches.length > 0
+                    ? `${finishedToday}/${todayMatches.length} partidos del dia ya quedaron cerrados.`
+                    : liveMatches.length > 0
+                      ? `${liveMatches.length} partidos estan moviendo la tabla ahora mismo.`
+                      : "Entrando al fixture ves enseguida lo que sigue."}
                 </p>
               </div>
-              <Link
-                href="/fixture"
-                className="inline-flex min-h-[44px] items-center justify-center rounded-full border px-4 text-[0.82rem] font-semibold transition-colors hover:[color:var(--app-text)]"
-                style={{
-                  background: "var(--app-panel-soft-bg)",
-                  borderColor: "var(--app-border-strong)",
-                  color: "var(--app-text-muted)",
-                }}
-              >
-                Ver fixture
-              </Link>
+
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { eyebrow: "Hoy", value: `${finishedToday}/${todayMatches.length || 0}`, label: "cerrados" },
+                  { eyebrow: "Grupo", value: `+${groupTodayPoints}`, label: "aciertos" },
+                  { eyebrow: "Vos", value: `+${myTodayPoints}`, label: "sumados" },
+                  { eyebrow: "Gap", value: `${leaderGap}`, label: leaderGap > 0 ? "al lider" : "punta" },
+                ].map((stat) => (
+                  <div
+                    key={stat.eyebrow}
+                    className="rounded-[1.2rem] border px-3 py-3"
+                    style={{
+                      background: "var(--app-panel-soft-bg)",
+                      borderColor: "var(--app-border)",
+                    }}
+                  >
+                    <p className="text-[0.56rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      {stat.eyebrow}
+                    </p>
+                    <p className="mt-1 font-display text-[1.45rem] font-bold leading-none text-white">
+                      {stat.value}
+                    </p>
+                    <p className="mt-1 text-[0.62rem] uppercase tracking-[0.16em] text-slate-500">
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {liveOrTodayMatches.length > 0 && (
+      {featuredMatches.length > 0 && (
         <SectionShell
-          eyebrow="En vivo"
-          title={todayMatches.length > 0 ? "Timeline de hoy" : "Partidos en vivo"}
+          eyebrow={liveOrTodayMatches.length > 0 ? "En juego" : "Lo proximo"}
+          title={todayMatches.length > 0 ? "Jornada de hoy" : liveMatches.length > 0 ? "Partidos en vivo" : "Siguiente parada"}
           href="/fixture"
           hrefLabel="Ver todos"
         >
-          <div className="mb-4 flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-red-300">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
-            </span>
-            Picks cerrados, tabla en movimiento
-          </div>
           <div className="space-y-3">
-            {liveOrTodayMatches.map((m) => (
-              <MatchCard key={m.id} match={toMatchWithTeams(m)} isAuthenticated globalLocked={globalLocked} />
+            {featuredMatches.map((match) => (
+              <MatchCard key={match.id} match={toMatchWithTeams(match)} isAuthenticated globalLocked={globalLocked} />
             ))}
           </div>
         </SectionShell>
       )}
-
-      <SectionShell
-        eyebrow="Agenda"
-        title="Próximos partidos"
-        href="/fixture"
-        hrefLabel="Ver fixture"
-      >
-        {nextMatches.length === 0 ? (
-          <div
-            className="rounded-[1.5rem] border px-4 py-10 text-center"
-            style={{
-              background: "var(--app-panel-subtle-bg)",
-              borderColor: "var(--app-border)",
-            }}
-          >
-            <p className="font-display text-[1.25rem] font-bold text-white">
-              No hay partidos próximos
-            </p>
-            <p className="mt-2 text-sm text-slate-400">
-              El Mundial arranca el 11 de junio.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {nextMatches.map((m) => (
-              <MatchCard key={m.id} match={toMatchWithTeams(m)} isAuthenticated globalLocked={globalLocked} />
-            ))}
-          </div>
-        )}
-      </SectionShell>
 
       {myEntry && !inTopVisible && (
         <MyPositionBanner entry={myEntry} total={totalUsers} />
@@ -604,7 +469,7 @@ export default async function HomePage() {
             }}
           >
             <p className="font-display text-[1.15rem] font-bold text-white">
-              Nadie sumó puntos todavía
+              Nadie sumo puntos todavia
             </p>
             <p className="mt-2 text-sm text-slate-400">
               Apenas terminen los primeros partidos, el ranking empieza a moverse.
@@ -612,31 +477,31 @@ export default async function HomePage() {
           </div>
         ) : (
           <div className="overflow-hidden rounded-[1.5rem] border border-white/6 bg-black/10">
-            {ranking.map((u, i) => {
-              const isMe = u.id === userId;
-              const displayRank = rankingDisplayRanks[i];
-              const medals = ["🥇", "🥈", "🥉"];
+            {ranking.map((user, index) => {
+              const isMe = user.id === userId;
+              const displayRank = rankingDisplayRanks[index];
+              const medals = ["1", "2", "3"];
 
               return (
                 <div
-                  key={u.id}
-                  className={`flex items-center gap-3 px-4 py-3.5 ${i < ranking.length - 1 ? "border-b border-white/6" : ""} ${
+                  key={user.id}
+                  className={`flex items-center gap-3 px-4 py-3.5 ${index < ranking.length - 1 ? "border-b border-white/6" : ""} ${
                     isMe ? "bg-amber-400/[0.06]" : ""
                   }`}
                 >
                   <span className="w-6 text-center text-sm">
                     {displayRank <= 3 ? (
-                      medals[displayRank - 1]
+                      <span className="font-display text-base text-amber-200">{medals[displayRank - 1]}</span>
                     ) : (
                       <span className="font-mono text-xs text-slate-500">{displayRank}</span>
                     )}
                   </span>
                   <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/7 bg-white/5 text-[10px] font-bold text-slate-300">
-                    {getInitials(u.name)}
+                    {getInitials(user.name)}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className={`truncate text-sm font-semibold ${isMe ? "text-amber-100" : "text-white"}`}>
-                      {u.name ?? "Anónimo"}
+                      {user.name ?? "Anonimo"}
                       {isMe && (
                         <span className="ml-1.5 text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-amber-300/70">
                           vos
@@ -646,7 +511,7 @@ export default async function HomePage() {
                   </div>
                   <div className="text-right">
                     <p className="font-display text-[1.15rem] font-bold leading-none text-white">
-                      {u.totalPoints}
+                      {user.totalPoints}
                     </p>
                     <p className="text-[0.6rem] uppercase tracking-[0.18em] text-slate-500">
                       pts

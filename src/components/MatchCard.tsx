@@ -35,6 +35,16 @@ const OUTCOME_STYLES: Record<PredictionResult, string> = {
   AWAY: "border-violet-500/30 bg-violet-500/10 text-violet-300",
 };
 
+function buildPickBreakdown(picks: PickEntry[] | null) {
+  return (picks ?? []).reduce<Record<PredictionResult, number>>(
+    (acc, pick) => {
+      acc[pick.prediction] += 1;
+      return acc;
+    },
+    { HOME: 0, DRAW: 0, AWAY: 0 }
+  );
+}
+
 function OutcomeStrip({
   match,
   myPrediction,
@@ -210,6 +220,19 @@ export default function MatchCard({
   const isDraw = finished && winner === "DRAW";
   const venueLabel = [match.stadium, match.city].filter(Boolean).join(" · ") || "Sede por confirmar";
   const showSealedTicket = predictionsClosed || matchStarted;
+  const pickBreakdown = buildPickBreakdown(picks);
+  const leadingPick = (["HOME", "DRAW", "AWAY"] as PredictionResult[]).reduce<PredictionResult | null>((leader, value) => {
+    if (pickBreakdown[value] === 0) return leader;
+    if (!leader || pickBreakdown[value] > pickBreakdown[leader]) return value;
+    return leader;
+  }, null);
+  const leadingPickLabel = leadingPick
+    ? leadingPick === "HOME"
+      ? match.homeTeam.code
+      : leadingPick === "AWAY"
+        ? match.awayTeam.code
+        : "Empate"
+    : null;
 
   return (
     <div
@@ -364,15 +387,25 @@ export default function MatchCard({
         </div>
       )}
 
-      {isGroupStage && matchStarted && isAuthenticated && (
-        <div className="border-t border-brand-border">
+      {isGroupStage && isAuthenticated && (
+        <div className="border-t border-brand-border bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.08),transparent_45%),linear-gradient(180deg,rgba(15,23,42,0.88),rgba(2,6,23,0.98))]">
           <button
             onClick={togglePicks}
-            className="w-full px-4 py-2.5 flex items-center justify-between text-[11px] text-slate-500 hover:text-slate-300 transition-colors"
+            className="w-full px-4 py-3 flex items-center justify-between gap-3 text-[11px] text-slate-500 hover:text-slate-200 transition-colors"
           >
-            <span className="font-semibold uppercase tracking-wider">
-              {picksLoading ? "Cargando..." : `Picks${picks ? ` (${picks.length})` : ""}`}
-            </span>
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 shadow-[0_0_18px_rgba(59,130,246,0.08)]">
+                <Users size={13} />
+              </span>
+              <div className="min-w-0 text-left">
+                <span className="block font-semibold uppercase tracking-[0.18em]">
+                  {picksLoading ? "Cargando..." : `Picks${picks ? ` (${picks.length})` : ""}`}
+                </span>
+                <span className="block truncate text-[10px] text-slate-600">
+                  {leadingPickLabel ? `La mesa se inclina por ${leadingPickLabel}` : "Abrí el panel para ver cómo viene la mesa"}
+                </span>
+              </div>
+            </div>
             <svg
               width="12"
               height="12"
@@ -389,16 +422,35 @@ export default function MatchCard({
           </button>
 
           {showPicks && picks !== null && (
-            <div className="px-3 pb-3 space-y-1.5 animate-slide-up">
+            <div className="px-3 pb-3 space-y-2.5 animate-slide-up">
+              <div className="grid grid-cols-3 gap-2">
+                {(["HOME", "DRAW", "AWAY"] as PredictionResult[]).map((value) => {
+                  const label = value === "HOME" ? match.homeTeam.code : value === "AWAY" ? match.awayTeam.code : "Emp";
+                  return (
+                    <div
+                      key={value}
+                      className={cn(
+                        "rounded-xl border px-2 py-2 text-center",
+                        PICK_COLORS[value],
+                        pickBreakdown[value] === 0 && "border-white/6 bg-white/[0.03] text-slate-600"
+                      )}
+                    >
+                      <p className="text-[9px] font-black uppercase tracking-[0.16em]">{label}</p>
+                      <p className="mt-1 text-sm font-black tabular-nums">{pickBreakdown[value]}</p>
+                    </div>
+                  );
+                })}
+              </div>
+
               {picks.length === 0 ? (
-                <p className="text-center text-[11px] text-slate-700 py-2">
+                <p className="rounded-xl border border-dashed border-white/10 bg-black/10 py-3 text-center text-[11px] text-slate-700">
                   Nadie predijo este partido
                 </p>
               ) : (
                 picks.map((pick) => (
                   <div
                     key={pick.userId}
-                    className="flex items-center gap-2.5 py-1"
+                    className="flex items-center gap-2.5 rounded-xl border border-white/6 bg-white/[0.03] px-2.5 py-2"
                   >
                     <Avatar name={pick.name} image={pick.image} />
                     <span className="flex-1 text-[12px] text-slate-300 font-medium truncate">

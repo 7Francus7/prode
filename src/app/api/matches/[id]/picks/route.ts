@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { isMatchLocked } from "@/lib/utils";
 
 export async function GET(
   _: Request,
@@ -19,17 +18,13 @@ export async function GET(
 
   const match = await prisma.match.findUnique({
     where: { id },
-    select: { matchDate: true, status: true, groupId: true },
+    select: { groupId: true },
   });
 
   if (!match) return NextResponse.json({ error: "Partido no encontrado" }, { status: 404 });
 
   if (!match.groupId) {
     return NextResponse.json({ error: "Partido sin predicciones" }, { status: 404 });
-  }
-
-  if (!isMatchLocked(match.matchDate, match.status)) {
-    return NextResponse.json({ error: "Partido no bloqueado aún" }, { status: 403 });
   }
 
   const predictions = await prisma.prediction.findMany({
